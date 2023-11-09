@@ -1309,6 +1309,7 @@ void DAGTypeLegalizer::ExpandFloatResult(SDNode *N, unsigned ResNo) {
   case ISD::FDIV:       ExpandFloatRes_FDIV(N, Lo, Hi); break;
   case ISD::STRICT_FEXP:
   case ISD::FEXP:       ExpandFloatRes_FEXP(N, Lo, Hi); break;
+  case ISD::FFREXP:     ExpandFloatRes_FREXP(N, Lo, Hi); break;
   case ISD::STRICT_FEXP2:
   case ISD::FEXP2:      ExpandFloatRes_FEXP2(N, Lo, Hi); break;
   case ISD::FEXP10:     ExpandFloatRes_FEXP10(N, Lo, Hi); break;
@@ -1489,6 +1490,14 @@ void DAGTypeLegalizer::ExpandFloatRes_FDIV(SDNode *N, SDValue &Lo,
                                         RTLIB::DIV_F80,
                                         RTLIB::DIV_F128,
                                         RTLIB::DIV_PPCF128), Lo, Hi);
+}
+
+void DAGTypeLegalizer::ExpandFloatRes_FREXP(SDNode *N,
+                                           SDValue &Lo, SDValue &Hi) {
+  ExpandFloatRes_Unary(N, GetFPLibCall(N->getValueType(0),
+                                       RTLIB::FREXP_F32, RTLIB::FREXP_F64,
+                                       RTLIB::FREXP_F80, RTLIB::FREXP_F128,
+                                       RTLIB::FREXP_PPCF128), Lo, Hi);
 }
 
 void DAGTypeLegalizer::ExpandFloatRes_FEXP(SDNode *N,
