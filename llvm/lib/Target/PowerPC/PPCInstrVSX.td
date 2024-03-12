@@ -2431,6 +2431,32 @@ def DblwdCmp {
                                (v2i64 (XXSPLTW EQWSHAND, 2)), 0));
 }
 
+def SDTVPLoad: SDTypeProfile<1, 4, [
+  SDTCisVec<0>, SDTCisPtrTy<1>, SDTCisPtrTy<2>, SDTCisSameNumEltsAs<0, 3>, SDTCisInt<3>, SDTCisInt<4>
+]>;
+def SDTVPStore: SDTypeProfile<0, 5, [
+  SDTCisVec<0>, SDTCisPtrTy<1>, SDTCisPtrTy<2>,  SDTCisSameNumEltsAs<0, 3>, SDTCisInt<3>, SDTCisInt<4>
+]>;
+def vp_load    : SDNode<"ISD::VP_LOAD",  SDTVPLoad,
+  [SDNPHasChain, SDNPMayLoad, SDNPMemOperand]>;
+def vp_store    : SDNode<"ISD::VP_STORE",  SDTVPStore,
+  [SDNPHasChain, SDNPMayStore, SDNPMemOperand]>;
+def load_vl : PatFrags<(ops node:$src1, node:$src2), [
+    (vp_load node:$src1, undef, undef, node:$src2),
+    (vp_load node:$src1, undef, immAllZerosV, node:$src2)
+  ], [{
+    return !cast<VPLoadSDNode>(N)->isExpandingLoad() &&
+      cast<VPLoadSDNode>(N)->getExtensionType() == ISD::NON_EXTLOAD &&
+      cast<VPLoadSDNode>(N)->isUnindexed();
+}]>;
+def store_vl : PatFrags<(ops node:$src1, node:$src2, node:$src3), [
+    (vp_store node:$src1, node:$src2, undef, undef, node:$src3),
+    (vp_store node:$src1, node:$src2, undef, immAllZerosV, node:$src3)
+  ], [{
+    return !cast<VPStoreSDNode>(N)->isTruncatingStore() &&
+        cast<VPStoreSDNode>(N)->isUnindexed();
+}]>;
+
 //---------------------------- Anonymous Patterns ----------------------------//
 // Predicate combinations are kept in roughly chronological order in terms of
 // instruction availability in the architecture. For example, VSX came in with
@@ -3954,6 +3980,21 @@ def : Pat<(int_ppc_vsx_stxvw4x v4i32:$rS, XForm:$dst),
           (STXVX $rS, XForm:$dst)>;
 def : Pat<(int_ppc_vsx_stxvd2x v2f64:$rS, XForm:$dst),
           (STXVX $rS, XForm:$dst)>;
+
+// ld/st-with-length patterns
+foreach vt = [ v2i64, v4i32, v2f64, v4f32, ] in {
+  def : Pat<(!cast<ValueType>(""#vt) (load_vl addr:$src, i64:$rB)),
+            (LXVL $src, $rB)>;
+  def : Pat<(store_vl !cast<ValueType>(""#vt):$rS, addr:$dst, i64:$rB),
+            (STXVL $rS, $dst, $rB)>;
+}
+// We have to do v8i16 and v16i8 separately because they are not in VSRC.
+foreach vt = [ v8i16, v16i8, ] in {
+  def : Pat<(!cast<ValueType>(""#vt) (load_vl addr:$src, i64:$rB)),
+            (COPY_TO_REGCLASS (LXVL $src, $rB), VRRC)>;
+  def : Pat<(store_vl !cast<ValueType>(""#vt):$rS, addr:$dst, i64:$rB),
+            (STXVL (COPY_TO_REGCLASS $rS, VSRC), $dst, $rB)>;
+}
 
 // Build vectors from i8 loads
 defm : ScalToVecWPermute<v8i16, ScalarLoads.ZELi8,

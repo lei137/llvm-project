@@ -655,6 +655,9 @@ PPCTargetLowering::PPCTargetLowering(const PPCTargetMachine &TM,
   setOperationAction(ISD::INTRINSIC_VOID, MVT::i32, Custom);
   setOperationAction(ISD::INTRINSIC_VOID, MVT::Other, Custom);
 
+  setOperationAction(ISD::VP_LOAD, MVT::i32, Promote);
+  setOperationAction(ISD::VP_STORE, MVT::i32, Promote);
+
   // Comparisons that require checking two conditions.
   if (Subtarget.hasSPE()) {
     setCondCodeAction(ISD::SETO, MVT::f32, Expand);
@@ -16057,6 +16060,63 @@ SDValue PPCTargetLowering::PerformDAGCombine(SDNode *N,
     }
     }
     break;
+    case ISD::VP_LOAD: {
+      if (!DCI.isAfterLegalizeDAG())
+        break;
+      auto *LD = cast<VPLoadSDNode>(N);
+      SDValue Length = LD->getVectorLength();
+      SDNode *LengthNode = Length.getNode();
+      // We don't want to shift on subsequent combines.
+      // As a workaround, we check if the length node is a constant shift of at
+      // least 56. The shift+mul might get combined, so we also check for a
+      // corresponding constant multiplication.
+      if (LengthNode->getOpcode() == ISD::SHL)
+        if (isa<ConstantSDNode>(Length.getOperand(1).getNode()))
+          if (Length.getConstantOperandVal(1) >= 56)
+            return SDValue();
+      if (LengthNode->getOpcode() == ISD::MUL)
+        if (isa<ConstantSDNode>(Length.getOperand(1).getNode()))
+          if (Length.getConstantOperandVal(1) >> 56)
+            return SDValue();
+      SDLoc DL(N);
+      unsigned EltBytes = N->getValueType(0).getScalarSizeInBits() / 8;
+      SDValue ExtLength = DAG.getZExtOrTrunc(Length, DL, MVT::i64);
+      SDValue ShiftedLength =
+          DAG.getNode(ISD::SHL, DL, MVT::i64, ExtLength,
+                      DAG.getConstant(56 + countTrailingZeros(EltBytes), DL,
+                                      getPointerTy(DAG.getDataLayout())));
+      SmallVector<SDValue, 5> NewOps(N->op_begin(), N->op_end());
+      NewOps[4] = ShiftedLength;
+      return SDValue(DAG.UpdateNodeOperands(N, NewOps), 0);
+      break;
+    }
+    case ISD::VP_STORE: {
+      if (!DCI.isAfterLegalizeDAG())
+        break;
+      auto *ST = cast<VPStoreSDNode>(N);
+      SDValue Length = ST->getVectorLength();
+      SDNode *LengthNode = Length.getNode();
+      if (LengthNode->getOpcode() == ISD::SHL)
+        if (isa<ConstantSDNode>(Length.getOperand(1).getNode()))
+          if (Length.getConstantOperandVal(1) >= 56)
+            return SDValue();
+      if (LengthNode->getOpcode() == ISD::MUL)
+        if (isa<ConstantSDNode>(Length.getOperand(1).getNode()))
+          if (Length.getConstantOperandVal(1) >> 56)
+            return SDValue();
+      SDLoc DL(N);
+      unsigned EltBytes =
+          N->getOperand(1).getValueType().getScalarSizeInBits() / 8;
+      SDValue ExtLength = DAG.getZExtOrTrunc(Length, DL, MVT::i64);
+      SDValue ShiftedLength =
+          DAG.getNode(ISD::SHL, DL, MVT::i64, ExtLength,
+                      DAG.getConstant(56 + countTrailingZeros(EltBytes), DL,
+                                      getPointerTy(DAG.getDataLayout())));
+      SmallVector<SDValue, 5> NewOps(N->op_begin(), N->op_end());
+      NewOps[5] = ShiftedLength;
+      return SDValue(DAG.UpdateNodeOperands(N, NewOps), 0);
+      break;
+    }
     case ISD::INTRINSIC_WO_CHAIN: {
       bool isLittleEndian = Subtarget.isLittleEndian();
       unsigned IID = N->getConstantOperandVal(0);

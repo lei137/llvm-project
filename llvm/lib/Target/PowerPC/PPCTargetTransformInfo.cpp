@@ -1096,3 +1096,48 @@ InstructionCost PPCTTIImpl::getVPMemoryOpCost(unsigned Opcode, Type *Src,
 bool PPCTTIImpl::supportsTailCallFor(const CallBase *CB) const {
   return TLI->supportsTailCallFor(CB);
 }
+
+TTI::VPLegalization
+PPCTTIImpl::getVPLegalizationStrategy(const VPIntrinsic &PI) const {
+  auto Legal = TargetTransformInfo::VPLegalization(
+      /* EVLParamStrategy */ TargetTransformInfo::VPLegalization::Legal,
+      /* OperatorStrategy */ TargetTransformInfo::VPLegalization::Legal);
+  auto Illegal = BaseT::getVPLegalizationStrategy(PI);
+  // Masks are unsupported.
+  if (!isa<UndefValue>(PI.getMaskParam()))
+    return Illegal;
+  switch (PI.getIntrinsicID()) {
+  default:
+    return Illegal;
+  case Intrinsic::vp_load:
+  case Intrinsic::vp_store: {
+    // We currently don't support the target-independent interface for Altivec.
+    // Loads/stores with length instructions use bits 0-7 of the GPR operand and
+    // therefore cannot be used in 32-bit mode.
+    if ((!ST->hasP9Vector() && !ST->hasP10Vector()) || !ST->isPPC64())
+      return Illegal;
+    Type *DataType = PI.getIntrinsicID() == Intrinsic::vp_load
+                         ? PI.getType()
+                         : PI.getMemoryDataParam()->getType();
+    if (isa<FixedVectorType>(DataType)) {
+      //      auto *VecTy = dyn_cast<FixedVectorType>(DataType);
+      unsigned VecWidth = DataType->getPrimitiveSizeInBits();
+      return VecWidth == 128 ? Legal : Illegal;
+    }
+    Type *ScalarTy = DataType->getScalarType();
+    if (ScalarTy->isPointerTy())
+      return Legal;
+
+    if (ScalarTy->isFloatTy() || ScalarTy->isDoubleTy())
+      return Legal;
+
+    if (!ScalarTy->isIntegerTy())
+      return Illegal;
+
+    unsigned IntWidth = ScalarTy->getIntegerBitWidth();
+    if (IntWidth == 8 || IntWidth == 16 || IntWidth == 32 || IntWidth == 64)
+      return Legal;
+    return Illegal;
+  }
+  }
+}
