@@ -147,6 +147,7 @@ public:
                                     TTI::TargetCostKind CostKind,
                                     const Instruction *I = nullptr);
   bool supportsTailCallFor(const CallBase *CB) const;
+  TTI::VPLegalization getVPLegalizationStrategy(const VPIntrinsic &PI) const;
 
 private:
   // The following constant is used for estimating costs on power9.
