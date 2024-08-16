@@ -18,6 +18,10 @@
 // RUN:   %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
 // RUN: %clang_cc1 -triple armv7-linux -O2 -emit-llvm -fshort-enums \
 // RUN:   %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-32
+// RUN: %clang_cc1 -triple arm64 -target-abi darwinpcs -O2 -emit-llvm \
+// RUN:   -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
+// RUN: %clang_cc1 -triple aarch64 -target-abi darwinpcs -O2 -emit-llvm \
+// RUN:   -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
 
 typedef union tu_c {
 	char a;
