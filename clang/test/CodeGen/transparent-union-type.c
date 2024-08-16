@@ -1,16 +1,22 @@
-// RUN: %clang_cc1 -triple powerpc64le-unknown-linux -O2 -target-cpu pwr7 \
-// RUN:   -emit-llvm -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
-// RUN: %clang_cc1 -triple powerpc64-unknown-linux -O2 -target-cpu pwr7 \
-// RUN:   -emit-llvm -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
-// RUN: %clang_cc1 -triple powerpc-unknown-linux -O2 -target-cpu pwr7 \
-// RUN:   -emit-llvm -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-32
-// RUN: %clang_cc1 -triple powerpc64-unknown-aix -O2 -target-cpu pwr7 \
-// RUN:   -emit-llvm -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
-// RUN: %clang_cc1 -triple powerpc-unknown-aix -O2 -target-cpu pwr7 \
-// RUN:   -emit-llvm -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-32
-// RUN: %clang_cc1 -triple riscv64-none-linux-gnu -O2 -emit-llvm -fshort-enums \
+// RUN: %clang_cc1 -triple powerpc64le-linux -O2 -target-cpu pwr7 -emit-llvm \
+// RUN:   -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
+// RUN: %clang_cc1 -triple powerpc64-linux -O2 -target-cpu pwr7 -emit-llvm \
+// RUN:   -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
+// RUN: %clang_cc1 -triple powerpc-linux -O2 -target-cpu pwr7 -emit-llvm \
+// RUN:   -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-32
+// RUN: %clang_cc1 -triple powerpc64-aix -O2 -target-cpu pwr7 -emit-llvm \
+// RUN:   -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
+// RUN: %clang_cc1 -triple powerpc-aix -O2 -target-cpu pwr7 -emit-llvm \
+// RUN:   -fshort-enums %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-32
+// RUN: %clang_cc1 -triple riscv64-linux -O2 -emit-llvm -fshort-enums \
 // RUN:   %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
-// RUN: %clang_cc1 -triple riscv32-none-linux-gnu -O2 -emit-llvm -fshort-enums \
+// RUN: %clang_cc1 -triple riscv32-linux -O2 -emit-llvm -fshort-enums \
+// RUN:   %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-32
+// RUN: %clang_cc1 -triple i386-linux -O2 -emit-llvm -fshort-enums \
+// RUN:   %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-32
+// RUN: %clang_cc1 -triple x86_64-linux -O2 -emit-llvm -fshort-enums \
+// RUN:   %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-64
+// RUN: %clang_cc1 -triple armv7-linux -O2 -emit-llvm -fshort-enums \
 // RUN:   %s -o - | FileCheck %s --check-prefixes=CHECK,CHECK-32
 
 typedef union tu_c {
