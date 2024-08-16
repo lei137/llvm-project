@@ -350,9 +350,7 @@ ABIArgInfo RISCVABIInfo::classifyArgumentType(QualType Ty, bool IsFixed,
                                               int &ArgGPRsLeft,
                                               int &ArgFPRsLeft) const {
   assert(ArgGPRsLeft <= NumArgGPRs && "Arg GPR tracking underflow");
-  llvm::Type *CoerceTy = nullptr;
-  Ty = useFirstFieldIfTransparentUnion(Ty, getContext(), getVMContext(),
-                                           &CoerceTy);
+  Ty = useFirstFieldIfTransparentUnion(Ty);
 
   // Structures with either a non-trivial destructor or a non-trivial
   // copy constructor are always passed indirectly.
@@ -432,12 +430,12 @@ ABIArgInfo RISCVABIInfo::classifyArgumentType(QualType Ty, bool IsFixed,
 
     // All integral types are promoted to XLen width
     if (Size < XLen && Ty->isIntegralOrEnumerationType()) {
-      return extendType(Ty, CoerceTy);
+      return extendType(Ty, CGT.ConvertType(Ty));
     }
 
     if (const auto *EIT = Ty->getAs<BitIntType>()) {
       if (EIT->getNumBits() < XLen)
-        return extendType(Ty, CoerceTy);
+        return extendType(Ty, CGT.ConvertType(Ty));
       if (EIT->getNumBits() > 128 ||
           (!getContext().getTargetInfo().hasInt128Type() &&
            EIT->getNumBits() > 64))
