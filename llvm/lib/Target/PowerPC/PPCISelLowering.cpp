@@ -1410,7 +1410,8 @@ PPCTargetLowering::PPCTargetLowering(const PPCTargetMachine &TM,
                        ISD::MUL, ISD::FMA, ISD::SINT_TO_FP, ISD::BUILD_VECTOR});
   if (Subtarget.hasFPCVT())
     setTargetDAGCombine(ISD::UINT_TO_FP);
-  setTargetDAGCombine({ISD::LOAD, ISD::STORE, ISD::BR_CC});
+  setTargetDAGCombine({ISD::LOAD, ISD::STORE, ISD::BR_CC, ISD::VP_LOAD,
+                       ISD::VP_STORE});
   if (Subtarget.useCRBits())
     setTargetDAGCombine(ISD::BRCOND);
   setTargetDAGCombine({ISD::BSWAP, ISD::INTRINSIC_WO_CHAIN,
