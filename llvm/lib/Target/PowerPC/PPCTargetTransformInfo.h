@@ -141,6 +141,7 @@ public:
                                         TTI::TargetCostKind CostKind);
   bool areTypesABICompatible(const Function *Caller, const Function *Callee,
                              const ArrayRef<Type *> &Types) const;
+  TTI::VPLegalization getVPLegalizationStrategy(const VPIntrinsic &PI) const;
   bool hasActiveVectorLength(unsigned Opcode, Type *DataType,
                              Align Alignment) const;
   InstructionCost getVPMemoryOpCost(unsigned Opcode, Type *Src, Align Alignment,

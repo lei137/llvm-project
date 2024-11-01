@@ -16451,7 +16451,7 @@ SDValue PPCTargetLowering::PerformDAGCombine(SDNode *N,
       SDValue ExtLength = DAG.getZExtOrTrunc(Length, DL, MVT::i64);
       SDValue ShiftedLength =
           DAG.getNode(ISD::SHL, DL, MVT::i64, ExtLength,
-                      DAG.getConstant(56 + countTrailingZeros(EltBytes), DL,
+                      DAG.getConstant(56 + llvm::countr_zero(EltBytes), DL,
                                       getPointerTy(DAG.getDataLayout())));
       SmallVector<SDValue, 5> NewOps(N->op_begin(), N->op_end());
       NewOps[4] = ShiftedLength;
@@ -16478,7 +16478,7 @@ SDValue PPCTargetLowering::PerformDAGCombine(SDNode *N,
       SDValue ExtLength = DAG.getZExtOrTrunc(Length, DL, MVT::i64);
       SDValue ShiftedLength =
           DAG.getNode(ISD::SHL, DL, MVT::i64, ExtLength,
-                      DAG.getConstant(56 + countTrailingZeros(EltBytes), DL,
+                      DAG.getConstant(56 + llvm::countr_zero(EltBytes), DL,
                                       getPointerTy(DAG.getDataLayout())));
       SmallVector<SDValue, 5> NewOps(N->op_begin(), N->op_end());
       NewOps[5] = ShiftedLength;
