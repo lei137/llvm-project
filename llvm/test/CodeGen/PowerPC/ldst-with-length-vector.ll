@@ -2,91 +2,91 @@
 ; RUN: llc -verify-machineinstrs -mcpu=pwr9 -O0 -mtriple=powerpc64le-unknown-linux-gnu < %s | FileCheck %s
 ; RUN: llc -verify-machineinstrs -mcpu=pwr9 -O0 -mtriple=powerpc64-unknown-linux-gnu < %s | FileCheck %s
 
-define void @store_vl_v2i64(<2 x i64>* %ptr, <2 x i64> %val, i32 %evl) {
+define void @store_vl_v2i64(ptr %ptr, <2 x i64> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v2i64:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    sldi 4, 7, 59
 ; CHECK-NEXT:    stxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v2i64(<2 x i64> %val, <2 x i64>* %ptr, <2 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v2i64(<2 x i64> %val, ptr %ptr, <2 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v2i64(<2 x i64>, <2 x i64>*, <2 x i1>, i32)
-define <2 x i64> @load_vl_v2i64_i32(<2 x i64>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v2i64(<2 x i64>, ptr, <2 x i1>, i32)
+define <2 x i64> @load_vl_v2i64_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v2i64_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    sldi 4, 4, 59
 ; CHECK-NEXT:    lxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <2 x i64> @llvm.vp.load.v2i64(<2 x i64>* %ptr, <2 x i1> undef, i32 %evl)
+  %res = call <2 x i64> @llvm.vp.load.v2i64(ptr %ptr, <2 x i1> undef, i32 %evl)
   ret <2 x i64> %res
 }
-declare <2 x i64> @llvm.vp.load.v2i64(<2 x i64>*, <2 x i1>, i32)
+declare <2 x i64> @llvm.vp.load.v2i64(ptr, <2 x i1>, i32)
 
-define void @store_vl_v4i32(<4 x i32>* %ptr, <4 x i32> %val, i32 %evl) {
+define void @store_vl_v4i32(ptr %ptr, <4 x i32> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v4i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    sldi 4, 7, 58
 ; CHECK-NEXT:    stxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v4i32(<4 x i32> %val, <4 x i32>* %ptr, <4 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v4i32(<4 x i32> %val, ptr %ptr, <4 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v4i32(<4 x i32>, <4 x i32>*, <4 x i1>, i32)
-define <4 x i32> @load_vl_v4i32_i32(<4 x i32>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v4i32(<4 x i32>, ptr, <4 x i1>, i32)
+define <4 x i32> @load_vl_v4i32_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v4i32_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    sldi 4, 4, 58
 ; CHECK-NEXT:    lxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <4 x i32> @llvm.vp.load.v4i32(<4 x i32>* %ptr, <4 x i1> undef, i32 %evl)
+  %res = call <4 x i32> @llvm.vp.load.v4i32(ptr %ptr, <4 x i1> undef, i32 %evl)
   ret <4 x i32> %res
 }
-declare <4 x i32> @llvm.vp.load.v4i32(<4 x i32>*, <4 x i1>, i32)
+declare <4 x i32> @llvm.vp.load.v4i32(ptr, <4 x i1>, i32)
 
-define void @store_vl_v8i16(<8 x i16>* %ptr, <8 x i16> %val, i32 %evl) {
+define void @store_vl_v8i16(ptr %ptr, <8 x i16> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v8i16:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    sldi 4, 7, 57
 ; CHECK-NEXT:    stxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v8i16(<8 x i16> %val, <8 x i16>* %ptr, <8 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v8i16(<8 x i16> %val, ptr %ptr, <8 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v8i16(<8 x i16>, <8 x i16>*, <8 x i1>, i32)
-define <8 x i16> @load_vl_v8i16_i32(<8 x i16>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v8i16(<8 x i16>, ptr, <8 x i1>, i32)
+define <8 x i16> @load_vl_v8i16_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v8i16_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    sldi 4, 4, 57
 ; CHECK-NEXT:    lxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <8 x i16> @llvm.vp.load.v8i16(<8 x i16>* %ptr, <8 x i1> undef, i32 %evl)
+  %res = call <8 x i16> @llvm.vp.load.v8i16(ptr %ptr, <8 x i1> undef, i32 %evl)
   ret <8 x i16> %res
 }
-declare <8 x i16> @llvm.vp.load.v8i16(<8 x i16>*, <8 x i1>, i32)
+declare <8 x i16> @llvm.vp.load.v8i16(ptr, <8 x i1>, i32)
 
-define void @store_vl_v16i8(<16 x i8>* %ptr, <16 x i8> %val, i32 %evl) {
+define void @store_vl_v16i8(ptr %ptr, <16 x i8> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v16i8:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    sldi 4, 7, 56
 ; CHECK-NEXT:    stxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v16i8(<16 x i8> %val, <16 x i8>* %ptr, <16 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v16i8(<16 x i8> %val, ptr %ptr, <16 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v16i8(<16 x i8>, <16 x i8>*, <16 x i1>, i32)
-define <16 x i8> @load_vl_v16i8_i32(<16 x i8>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v16i8(<16 x i8>, ptr, <16 x i1>, i32)
+define <16 x i8> @load_vl_v16i8_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v16i8_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    sldi 4, 4, 56
 ; CHECK-NEXT:    lxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <16 x i8> @llvm.vp.load.v16i8(<16 x i8>* %ptr, <16 x i1> undef, i32 %evl)
+  %res = call <16 x i8> @llvm.vp.load.v16i8(ptr %ptr, <16 x i1> undef, i32 %evl)
   ret <16 x i8> %res
 }
-declare <16 x i8> @llvm.vp.load.v16i8(<16 x i8>*, <16 x i1>, i32)
+declare <16 x i8> @llvm.vp.load.v16i8(ptr, <16 x i1>, i32)
 
-define void @store_vl_v4i64(<4 x i64>* %ptr, <4 x i64> %val, i32 %evl) {
+define void @store_vl_v4i64(ptr %ptr, <4 x i64> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v4i64:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 5, 1
@@ -95,11 +95,11 @@ define void @store_vl_v4i64(<4 x i64>* %ptr, <4 x i64> %val, i32 %evl) {
 ; CHECK-NEXT:    stxvl 35, 4, 5
 ; CHECK-NEXT:    stxvl 34, 3, 5
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v4i64(<4 x i64> %val, <4 x i64>* %ptr, <4 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v4i64(<4 x i64> %val, ptr %ptr, <4 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v4i64(<4 x i64>, <4 x i64>*, <4 x i1>, i32)
-define <4 x i64> @load_vl_v4i64_i32(<4 x i64>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v4i64(<4 x i64>, ptr, <4 x i1>, i32)
+define <4 x i64> @load_vl_v4i64_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v4i64_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 4, 1
@@ -108,12 +108,12 @@ define <4 x i64> @load_vl_v4i64_i32(<4 x i64>* %ptr, i32 %evl) {
 ; CHECK-NEXT:    addi 3, 3, 16
 ; CHECK-NEXT:    lxvl 35, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <4 x i64> @llvm.vp.load.v4i64(<4 x i64>* %ptr, <4 x i1> undef, i32 %evl)
+  %res = call <4 x i64> @llvm.vp.load.v4i64(ptr %ptr, <4 x i1> undef, i32 %evl)
   ret <4 x i64> %res
 }
-declare <4 x i64> @llvm.vp.load.v4i64(<4 x i64>*, <4 x i1>, i32)
+declare <4 x i64> @llvm.vp.load.v4i64(ptr, <4 x i1>, i32)
 
-define void @store_vl_v8i32(<8 x i32>* %ptr, <8 x i32> %val, i32 %evl) {
+define void @store_vl_v8i32(ptr %ptr, <8 x i32> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v8i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 5, 1
@@ -122,11 +122,11 @@ define void @store_vl_v8i32(<8 x i32>* %ptr, <8 x i32> %val, i32 %evl) {
 ; CHECK-NEXT:    stxvl 35, 4, 5
 ; CHECK-NEXT:    stxvl 34, 3, 5
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v8i32(<8 x i32> %val, <8 x i32>* %ptr, <8 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v8i32(<8 x i32> %val, ptr %ptr, <8 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v8i32(<8 x i32>, <8 x i32>*, <8 x i1>, i32)
-define <8 x i32> @load_vl_v8i32_i32(<8 x i32>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v8i32(<8 x i32>, ptr, <8 x i1>, i32)
+define <8 x i32> @load_vl_v8i32_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v8i32_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 4, 1
@@ -135,12 +135,12 @@ define <8 x i32> @load_vl_v8i32_i32(<8 x i32>* %ptr, i32 %evl) {
 ; CHECK-NEXT:    addi 3, 3, 16
 ; CHECK-NEXT:    lxvl 35, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <8 x i32> @llvm.vp.load.v8i32(<8 x i32>* %ptr, <8 x i1> undef, i32 %evl)
+  %res = call <8 x i32> @llvm.vp.load.v8i32(ptr %ptr, <8 x i1> undef, i32 %evl)
   ret <8 x i32> %res
 }
-declare <8 x i32> @llvm.vp.load.v8i32(<8 x i32>*, <8 x i1>, i32)
+declare <8 x i32> @llvm.vp.load.v8i32(ptr, <8 x i1>, i32)
 
-define void @store_vl_v16i16(<16 x i16>* %ptr, <16 x i16> %val, i32 %evl) {
+define void @store_vl_v16i16(ptr %ptr, <16 x i16> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v16i16:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 5, 1
@@ -149,11 +149,11 @@ define void @store_vl_v16i16(<16 x i16>* %ptr, <16 x i16> %val, i32 %evl) {
 ; CHECK-NEXT:    stxvl 35, 4, 5
 ; CHECK-NEXT:    stxvl 34, 3, 5
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v16i16(<16 x i16> %val, <16 x i16>* %ptr, <16 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v16i16(<16 x i16> %val, ptr %ptr, <16 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v16i16(<16 x i16>, <16 x i16>*, <16 x i1>, i32)
-define <16 x i16> @load_vl_v16i16_i32(<16 x i16>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v16i16(<16 x i16>, ptr, <16 x i1>, i32)
+define <16 x i16> @load_vl_v16i16_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v16i16_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 4, 1
@@ -162,12 +162,12 @@ define <16 x i16> @load_vl_v16i16_i32(<16 x i16>* %ptr, i32 %evl) {
 ; CHECK-NEXT:    addi 3, 3, 16
 ; CHECK-NEXT:    lxvl 35, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <16 x i16> @llvm.vp.load.v16i16(<16 x i16>* %ptr, <16 x i1> undef, i32 %evl)
+  %res = call <16 x i16> @llvm.vp.load.v16i16(ptr %ptr, <16 x i1> undef, i32 %evl)
   ret <16 x i16> %res
 }
-declare <16 x i16> @llvm.vp.load.v16i16(<16 x i16>*, <16 x i1>, i32)
+declare <16 x i16> @llvm.vp.load.v16i16(ptr, <16 x i1>, i32)
 
-define void @store_vl_v32i8(<32 x i8>* %ptr, <32 x i8> %val, i32 %evl) {
+define void @store_vl_v32i8(ptr %ptr, <32 x i8> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v32i8:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 5, 1
@@ -176,11 +176,11 @@ define void @store_vl_v32i8(<32 x i8>* %ptr, <32 x i8> %val, i32 %evl) {
 ; CHECK-NEXT:    stxvl 35, 4, 5
 ; CHECK-NEXT:    stxvl 34, 3, 5
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v32i8(<32 x i8> %val, <32 x i8>* %ptr, <32 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v32i8(<32 x i8> %val, ptr %ptr, <32 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v32i8(<32 x i8>, <32 x i8>*, <32 x i1>, i32)
-define <32 x i8> @load_vl_v32i8_i32(<32 x i8>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v32i8(<32 x i8>, ptr, <32 x i1>, i32)
+define <32 x i8> @load_vl_v32i8_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v32i8_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 4, 1
@@ -189,12 +189,12 @@ define <32 x i8> @load_vl_v32i8_i32(<32 x i8>* %ptr, i32 %evl) {
 ; CHECK-NEXT:    addi 3, 3, 16
 ; CHECK-NEXT:    lxvl 35, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <32 x i8> @llvm.vp.load.v32i8(<32 x i8>* %ptr, <32 x i1> undef, i32 %evl)
+  %res = call <32 x i8> @llvm.vp.load.v32i8(ptr %ptr, <32 x i1> undef, i32 %evl)
   ret <32 x i8> %res
 }
-declare <32 x i8> @llvm.vp.load.v32i8(<32 x i8>*, <32 x i1>, i32)
+declare <32 x i8> @llvm.vp.load.v32i8(ptr, <32 x i1>, i32)
 
-define void @store_vl_v3i64(<3 x i64>* %ptr, <3 x i64> %val, i32 %evl) {
+define void @store_vl_v3i64(ptr %ptr, <3 x i64> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v3i64:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    mtvsrdd 35, 5, 4
@@ -207,11 +207,11 @@ define void @store_vl_v3i64(<3 x i64>* %ptr, <3 x i64> %val, i32 %evl) {
 ; CHECK-NEXT:    addi 3, 3, 16
 ; CHECK-NEXT:    stxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v3i64(<3 x i64> %val, <3 x i64>* %ptr, <3 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v3i64(<3 x i64> %val, ptr %ptr, <3 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v3i64(<3 x i64>, <3 x i64>*, <3 x i1>, i32)
-define <3 x i64> @load_vl_v3i64_i32(<3 x i64>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v3i64(<3 x i64>, ptr, <3 x i1>, i32)
+define <3 x i64> @load_vl_v3i64_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v3i64_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 5, 1
@@ -224,12 +224,12 @@ define <3 x i64> @load_vl_v3i64_i32(<3 x i64>* %ptr, i32 %evl) {
 ; CHECK-NEXT:    mfvsrld 3, 0
 ; CHECK-NEXT:    mffprd 4, 0
 ; CHECK-NEXT:    blr
-  %res = call <3 x i64> @llvm.vp.load.v3i64(<3 x i64>* %ptr, <3 x i1> undef, i32 %evl)
+  %res = call <3 x i64> @llvm.vp.load.v3i64(ptr %ptr, <3 x i1> undef, i32 %evl)
   ret <3 x i64> %res
 }
-declare <3 x i64> @llvm.vp.load.v3i64(<3 x i64>*, <3 x i1>, i32)
+declare <3 x i64> @llvm.vp.load.v3i64(ptr, <3 x i1>, i32)
 
-define void @store_vl_v7i32(<7 x i32>* %ptr, <7 x i32> %val, i32 %evl) {
+define void @store_vl_v7i32(ptr %ptr, <7 x i32> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v7i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    rldimi 4, 5, 32, 0
@@ -251,11 +251,11 @@ define void @store_vl_v7i32(<7 x i32>* %ptr, <7 x i32> %val, i32 %evl) {
 ; CHECK-NEXT:    rldic 4, 4, 58, 4
 ; CHECK-NEXT:    stxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v7i32(<7 x i32> %val, <7 x i32>* %ptr, <7 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v7i32(<7 x i32> %val, ptr %ptr, <7 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v7i32(<7 x i32>, <7 x i32>*, <7 x i1>, i32)
-define <7 x i32> @load_vl_v7i32_i32(<7 x i32>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v7i32(<7 x i32>, ptr, <7 x i1>, i32)
+define <7 x i32> @load_vl_v7i32_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v7i32_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 5, 1
@@ -271,12 +271,12 @@ define <7 x i32> @load_vl_v7i32_i32(<7 x i32>* %ptr, i32 %evl) {
 ; CHECK-NEXT:    xxswapd 0, 1
 ; CHECK-NEXT:    stfd 0, 16(3)
 ; CHECK-NEXT:    blr
-  %res = call <7 x i32> @llvm.vp.load.v7i32(<7 x i32>* %ptr, <7 x i1> undef, i32 %evl)
+  %res = call <7 x i32> @llvm.vp.load.v7i32(ptr %ptr, <7 x i1> undef, i32 %evl)
   ret <7 x i32> %res
 }
-declare <7 x i32> @llvm.vp.load.v7i32(<7 x i32>*, <7 x i1>, i32)
+declare <7 x i32> @llvm.vp.load.v7i32(ptr, <7 x i1>, i32)
 
-define void @store_vl_v15i16(<15 x i16>* %ptr, <15 x i16> %val, i32 %evl) {
+define void @store_vl_v15i16(ptr %ptr, <15 x i16> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v15i16:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    mtvsrd 34, 4
@@ -329,11 +329,11 @@ define void @store_vl_v15i16(<15 x i16>* %ptr, <15 x i16> %val, i32 %evl) {
 ; CHECK-NEXT:    rldic 4, 4, 60, 3
 ; CHECK-NEXT:    stxvl 0, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v15i16(<15 x i16> %val, <15 x i16>* %ptr, <15 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v15i16(<15 x i16> %val, ptr %ptr, <15 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v15i16(<15 x i16>, <15 x i16>*, <15 x i1>, i32)
-define <15 x i16> @load_vl_v15i16_i32(<15 x i16>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v15i16(<15 x i16>, ptr, <15 x i1>, i32)
+define <15 x i16> @load_vl_v15i16_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v15i16_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 5, 1
@@ -352,12 +352,12 @@ define <15 x i16> @load_vl_v15i16_i32(<15 x i16>* %ptr, i32 %evl) {
 ; CHECK-NEXT:    xxswapd 0, 34
 ; CHECK-NEXT:    stfd 0, 16(3)
 ; CHECK-NEXT:    blr
-  %res = call <15 x i16> @llvm.vp.load.v15i16(<15 x i16>* %ptr, <15 x i1> undef, i32 %evl)
+  %res = call <15 x i16> @llvm.vp.load.v15i16(ptr %ptr, <15 x i1> undef, i32 %evl)
   ret <15 x i16> %res
 }
-declare <15 x i16> @llvm.vp.load.v15i16(<15 x i16>*, <15 x i1>, i32)
+declare <15 x i16> @llvm.vp.load.v15i16(ptr, <15 x i1>, i32)
 
-define void @store_vl_v31i8(<31 x i8>* %ptr, <31 x i8> %val, i32 %evl) {
+define void @store_vl_v31i8(ptr %ptr, <31 x i8> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v31i8:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    mtvsrd 34, 4
@@ -458,11 +458,11 @@ define void @store_vl_v31i8(<31 x i8>* %ptr, <31 x i8> %val, i32 %evl) {
 ; CHECK-NEXT:    rldic 4, 4, 60, 3
 ; CHECK-NEXT:    stxvl 0, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v31i8(<31 x i8> %val, <31 x i8>* %ptr, <31 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v31i8(<31 x i8> %val, ptr %ptr, <31 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v31i8(<31 x i8>, <31 x i8>*, <31 x i1>, i32)
-define <31 x i8> @load_vl_v31i8_i32(<31 x i8>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v31i8(<31 x i8>, ptr, <31 x i1>, i32)
+define <31 x i8> @load_vl_v31i8_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v31i8_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 5, 1
@@ -484,77 +484,77 @@ define <31 x i8> @load_vl_v31i8_i32(<31 x i8>* %ptr, i32 %evl) {
 ; CHECK-NEXT:    xxswapd 0, 34
 ; CHECK-NEXT:    stfd 0, 16(3)
 ; CHECK-NEXT:    blr
-  %res = call <31 x i8> @llvm.vp.load.v31i8(<31 x i8>* %ptr, <31 x i1> undef, i32 %evl)
+  %res = call <31 x i8> @llvm.vp.load.v31i8(ptr %ptr, <31 x i1> undef, i32 %evl)
   ret <31 x i8> %res
 }
-declare <31 x i8> @llvm.vp.load.v31i8(<31 x i8>*, <31 x i1>, i32)
+declare <31 x i8> @llvm.vp.load.v31i8(ptr, <31 x i1>, i32)
 
-define void @store_vl_v3i32(<3 x i32>* %ptr, <3 x i32> %val, i32 %evl) {
+define void @store_vl_v3i32(ptr %ptr, <3 x i32> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v3i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 4, 3
 ; CHECK-NEXT:    rldic 4, 4, 58, 4
 ; CHECK-NEXT:    stxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v3i32(<3 x i32> %val, <3 x i32>* %ptr, <3 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v3i32(<3 x i32> %val, ptr %ptr, <3 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v3i32(<3 x i32>, <3 x i32>*, <3 x i1>, i32)
-define <3 x i32> @load_vl_v3i32_i32(<3 x i32>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v3i32(<3 x i32>, ptr, <3 x i1>, i32)
+define <3 x i32> @load_vl_v3i32_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v3i32_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 4, 3
 ; CHECK-NEXT:    rldic 4, 4, 58, 4
 ; CHECK-NEXT:    lxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <3 x i32> @llvm.vp.load.v3i32(<3 x i32>* %ptr, <3 x i1> undef, i32 %evl)
+  %res = call <3 x i32> @llvm.vp.load.v3i32(ptr %ptr, <3 x i1> undef, i32 %evl)
   ret <3 x i32> %res
 }
-declare <3 x i32> @llvm.vp.load.v3i32(<3 x i32>*, <3 x i1>, i32)
+declare <3 x i32> @llvm.vp.load.v3i32(ptr, <3 x i1>, i32)
 
-define void @store_vl_v7i16(<7 x i16>* %ptr, <7 x i16> %val, i32 %evl) {
+define void @store_vl_v7i16(ptr %ptr, <7 x i16> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v7i16:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 4, 7
 ; CHECK-NEXT:    rldic 4, 4, 57, 4
 ; CHECK-NEXT:    stxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v7i16(<7 x i16> %val, <7 x i16>* %ptr, <7 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v7i16(<7 x i16> %val, ptr %ptr, <7 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v7i16(<7 x i16>, <7 x i16>*, <7 x i1>, i32)
-define <7 x i16> @load_vl_v7i16_i32(<7 x i16>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v7i16(<7 x i16>, ptr, <7 x i1>, i32)
+define <7 x i16> @load_vl_v7i16_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v7i16_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 4, 7
 ; CHECK-NEXT:    rldic 4, 4, 57, 4
 ; CHECK-NEXT:    lxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <7 x i16> @llvm.vp.load.v7i16(<7 x i16>* %ptr, <7 x i1> undef, i32 %evl)
+  %res = call <7 x i16> @llvm.vp.load.v7i16(ptr %ptr, <7 x i1> undef, i32 %evl)
   ret <7 x i16> %res
 }
-declare <7 x i16> @llvm.vp.load.v7i16(<7 x i16>*, <7 x i1>, i32)
+declare <7 x i16> @llvm.vp.load.v7i16(ptr, <7 x i1>, i32)
 
-define void @store_vl_v15i8(<15 x i8>* %ptr, <15 x i8> %val, i32 %evl) {
+define void @store_vl_v15i8(ptr %ptr, <15 x i8> %val, i32 %evl) {
 ; CHECK-LABEL: store_vl_v15i8:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 4, 15
 ; CHECK-NEXT:    rldic 4, 4, 56, 4
 ; CHECK-NEXT:    stxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  call void @llvm.vp.store.v15i8(<15 x i8> %val, <15 x i8>* %ptr, <15 x i1> undef, i32 %evl)
+  call void @llvm.vp.store.v15i8(<15 x i8> %val, ptr %ptr, <15 x i1> undef, i32 %evl)
   ret void
 }
-declare void @llvm.vp.store.v15i8(<15 x i8>, <15 x i8>*, <15 x i1>, i32)
-define <15 x i8> @load_vl_v15i8_i32(<15 x i8>* %ptr, i32 %evl) {
+declare void @llvm.vp.store.v15i8(<15 x i8>, ptr, <15 x i1>, i32)
+define <15 x i8> @load_vl_v15i8_i32(ptr %ptr, i32 %evl) {
 ; CHECK-LABEL: load_vl_v15i8_i32:
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    li 4, 15
 ; CHECK-NEXT:    rldic 4, 4, 56, 4
 ; CHECK-NEXT:    lxvl 34, 3, 4
 ; CHECK-NEXT:    blr
-  %res = call <15 x i8> @llvm.vp.load.v15i8(<15 x i8>* %ptr, <15 x i1> undef, i32 %evl)
+  %res = call <15 x i8> @llvm.vp.load.v15i8(ptr %ptr, <15 x i1> undef, i32 %evl)
   ret <15 x i8> %res
 }
-declare <15 x i8> @llvm.vp.load.v15i8(<15 x i8>*, <15 x i1>, i32)
+declare <15 x i8> @llvm.vp.load.v15i8(ptr, <15 x i1>, i32)
 
