@@ -215,6 +215,12 @@ PPCTargetLowering::PPCTargetLowering(const PPCTargetMachine &TM,
     setLoadExtAction(ISD::SEXTLOAD, VT, MVT::i8, Expand);
   }
 
+dbgs() << "LEI: promotion for write/read register intrinsics\n";
+  setOperationAction(ISD::WRITE_REGISTER, MVT::i8, Legal);
+//  AddPromotedToType(ISD::WRITE_REGISTER, MVT::i8, isPPC64 ? MVT::i64 : MVT::i32);
+  setOperationAction(ISD::READ_REGISTER, MVT::i8, Legal);
+//  AddPromotedToType(ISD::READ_REGISTER, MVT::i8, isPPC64 ? MVT::i64 : MVT::i32);
+
   if (Subtarget.isISA3_0()) {
     setLoadExtAction(ISD::EXTLOAD, MVT::f64, MVT::f16, Legal);
     setLoadExtAction(ISD::EXTLOAD, MVT::f32, MVT::f16, Legal);

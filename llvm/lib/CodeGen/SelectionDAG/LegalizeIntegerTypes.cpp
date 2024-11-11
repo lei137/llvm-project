@@ -1943,6 +1943,8 @@ bool DAGTypeLegalizer::PromoteIntegerOperand(SDNode *N, unsigned OpNo) {
   #endif
     report_fatal_error("Do not know how to promote this operator's operand!");
 
+  case ISD::WRITE_REGISTER:
+  case ISD::READ_REGISTER:
   case ISD::ANY_EXTEND:   Res = PromoteIntOp_ANY_EXTEND(N); break;
   case ISD::ATOMIC_STORE:
     Res = PromoteIntOp_ATOMIC_STORE(cast<AtomicSDNode>(N));
