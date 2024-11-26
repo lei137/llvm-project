@@ -1,0 +1,38 @@
+Community run results:
+
+Running 64 bit test-suite ...
+No failures detected in test-suite: /home/lei/llvm/community/log/test-suite-64-2024-11-26_18-20-47.out
+
+Running LIT tests: check-runtimes ...
+LIT tests for check-runtimes failed - see /home/lei/llvm/community/log/lit-2024-11-26_18-20-47_check-runtimes.log.
+********************
+Failed Tests (1):
+  Profile-powerpc64le :: Linux/binary-id-offset.c
+
+
+Testing Time: 58.52s
+
+Total Discovered Tests: 4297
+  Skipped          :    9 (0.21%)
+  Unsupported      : 1157 (26.93%)
+  Passed           : 3088 (71.86%)
+  Expectedly Failed:   42 (0.98%)
+  Failed           :    1 (0.02%)
+FAILED: CMakeFiles/check-runtimes /home/lei/llvm/community/build/runtimes/runtimes-bins/CMakeFiles/check-runtimes
+
+Running LIT tests: check-all ...
+LIT tests for check-all failed - see /home/lei/llvm/community/log/lit-2024-11-26_18-20-47_check-all.log.
+********************
+Failed Tests (1):
+  Profile-powerpc64le :: Linux/binary-id-offset.c
+
+
+Testing Time: 380.82s
+
+Total Discovered Tests: 119023
+  Skipped          :     91 (0.08%)
+  Unsupported      :   2739 (2.30%)
+  Passed           : 115951 (97.42%)
+  Expectedly Failed:    241 (0.20%)
+  Failed           :      1 (0.00%)
+FAILED: CMakeFiles/check-all /home/lei/llvm/community/build/CMakeFiles/check-all

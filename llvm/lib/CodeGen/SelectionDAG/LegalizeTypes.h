@@ -249,9 +249,13 @@ private:
   /// returns an i32, the lower 16 bits of which coincide with Op, and the upper
   /// 16 bits of which contain rubbish.
   SDValue GetPromotedInteger(SDValue Op) {
+    dbgs() << "LEI: GetPromotedInteger: valule in\n";
+    Op.dump();
     TableId &PromotedId = PromotedIntegers[getTableId(Op)];
     SDValue PromotedOp = getSDValue(PromotedId);
     assert(PromotedOp.getNode() && "Operand wasn't promoted?");
+    dbgs() << "LEI: GetPromotedInteger: valule generated\n";
+    PromotedOp.dump();
     return PromotedOp;
   }
   void SetPromotedInteger(SDValue Op, SDValue Result);
@@ -382,6 +386,7 @@ private:
   // Integer Operand Promotion.
   bool PromoteIntegerOperand(SDNode *N, unsigned OpNo);
   SDValue PromoteIntOp_ANY_EXTEND(SDNode *N);
+  SDValue PromoteIntOp_WRITE_REGISTER(SDNode *N);
   SDValue PromoteIntOp_ATOMIC_STORE(AtomicSDNode *N);
   SDValue PromoteIntOp_BITCAST(SDNode *N);
   SDValue PromoteIntOp_BUILD_PAIR(SDNode *N);

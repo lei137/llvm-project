@@ -1944,7 +1944,17 @@ bool DAGTypeLegalizer::PromoteIntegerOperand(SDNode *N, unsigned OpNo) {
     report_fatal_error("Do not know how to promote this operator's operand!");
 
   case ISD::WRITE_REGISTER:
+    dbgs() << "LEI: LegalizeIntegerTypes.cpp: promoteIntOp_ANY_EXTEND for write reg\n";
+    N->dump(&DAG); dbgs() << "\n";
+    Res = PromoteIntOp_WRITE_REGISTER(N);
+    Res.dump();
+    break;
   case ISD::READ_REGISTER:
+    dbgs() << "LEI: LegalizeIntegerTypes.cpp: promoteIntOp_ANY_EXTEND for read reg\n";
+    N->dump(&DAG); dbgs() << "\n";
+    Res = PromoteIntOp_ANY_EXTEND(N);
+    Res.dump();
+    break;
   case ISD::ANY_EXTEND:   Res = PromoteIntOp_ANY_EXTEND(N); break;
   case ISD::ATOMIC_STORE:
     Res = PromoteIntOp_ATOMIC_STORE(cast<AtomicSDNode>(N));
@@ -2166,6 +2176,11 @@ void DAGTypeLegalizer::PromoteSetCCOperands(SDValue &LHS, SDValue &RHS,
 
 SDValue DAGTypeLegalizer::PromoteIntOp_ANY_EXTEND(SDNode *N) {
   SDValue Op = GetPromotedInteger(N->getOperand(0));
+  return DAG.getNode(ISD::ANY_EXTEND, SDLoc(N), N->getValueType(0), Op);
+}
+
+SDValue DAGTypeLegalizer::PromoteIntOp_WRITE_REGISTER(SDNode *N) {
+  SDValue Op = GetPromotedInteger(N->getOperand(2));
   return DAG.getNode(ISD::ANY_EXTEND, SDLoc(N), N->getValueType(0), Op);
 }
 
