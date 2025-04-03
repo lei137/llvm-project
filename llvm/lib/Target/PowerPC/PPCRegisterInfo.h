@@ -143,6 +143,11 @@ public:
   void lowerWACCRestore(MachineBasicBlock::iterator II,
                         unsigned FrameIndex) const;
 
+  void lowerDMRRowSpilling(MachineBasicBlock::iterator II,
+                         unsigned FrameIndex) const;
+  void lowerDMRRowRestore(MachineBasicBlock::iterator II,
+                        unsigned FrameIndex) const;
+
   void lowerQuadwordSpilling(MachineBasicBlock::iterator II,
                              unsigned FrameIndex) const;
   void lowerQuadwordRestore(MachineBasicBlock::iterator II,
