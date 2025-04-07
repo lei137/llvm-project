@@ -203,9 +203,11 @@ let Predicates = [IsISAFuture] in {
                          [(set v1024i1:$AT, (int_ppc_mma_dmxor v1024i1:$ATi, v1024i1:$AB))]>,
                          RegConstraint<"$ATi = $AT">, NoEncode<"$ATi">;
 
-  def DMSETDMRZ : XForm_AT3<31, 2, 177, (outs dmr:$AT), (ins),
-                            "dmsetdmrz $AT", NoItinerary,
-                            [(set v1024i1:$AT, (int_ppc_mma_dmsetdmrz))]>;
+  let isAsCheapAsAMove = 1, isReMaterializable = 1 in {
+    def DMSETDMRZ : XForm_AT3<31, 2, 177, (outs dmr:$AT), (ins),
+                              "dmsetdmrz $AT", NoItinerary,
+                              [(set v1024i1:$AT, (int_ppc_mma_dmsetdmrz))]>;
+  }
 }
 
 // MMA+ accumulating/non-accumulating instructions.

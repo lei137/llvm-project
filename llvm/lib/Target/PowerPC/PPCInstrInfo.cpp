@@ -1109,6 +1109,7 @@ bool PPCInstrInfo::isReallyTriviallyReMaterializable(
   case PPC::CRUNSET:
   case PPC::XXSETACCZ:
   case PPC::XXSETACCZW:
+  case PPC::DMSETDMRZ:
     return true;
   }
   return TargetInstrInfo::isReallyTriviallyReMaterializable(MI);
