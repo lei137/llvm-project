@@ -53,51 +53,52 @@ let Predicates = [IsISAFuture] in {
 
 let Predicates = [HasVSX, IsISAFuture] in {
   let mayLoad = 1 in {
-    def LXVRL : XX1Form_memOp<31, 525, (outs vsrc:$XT), (ins memr:$RA, g8rc:$RB),
-                              "lxvrl $XT, $RA, $RB", IIC_LdStLoad, []>;
-
-    def LXVRLL : XX1Form_memOp<31, 557, (outs vsrc:$XT), (ins memr:$RA, g8rc:$RB),
-                               "lxvrll $XT, $RA, $RB", IIC_LdStLoad, []>;
-
-    def LXVPRL : XForm_XTp5_XAB5<31, 589, (outs vsrprc:$XTp),
-                                 (ins memr:$RA, g8rc:$RB),
-                                 "lxvprl $XTp, $RA, $RB", IIC_LdStLFD, []>;
-
-    def LXVPRLL : XForm_XTp5_XAB5<31, 621, (outs vsrprc:$XTp),
-                                  (ins memr:$RA, g8rc:$RB),
-                                  "lxvprll $XTp, $RA, $RB", IIC_LdStLFD, []>;
+    def LXVRL
+        : XX1Form_memOp<31, 525, (outs vsrc:$XT), (ins memr:$RA, g8rc:$RB),
+                        "lxvrl $XT, $RA, $RB", IIC_LdStLoad, []>;
+    def LXVRLL
+        : XX1Form_memOp<31, 557, (outs vsrc:$XT), (ins memr:$RA, g8rc:$RB),
+                        "lxvrll $XT, $RA, $RB", IIC_LdStLoad, []>;
+    def LXVPRL
+        : XForm_XTp5_XAB5<31, 589, (outs vsrprc:$XTp), (ins memr:$RA, g8rc:$RB),
+                          "lxvprl $XTp, $RA, $RB", IIC_LdStLFD, []>;
+    def LXVPRLL
+        : XForm_XTp5_XAB5<31, 621, (outs vsrprc:$XTp), (ins memr:$RA, g8rc:$RB),
+                          "lxvprll $XTp, $RA, $RB", IIC_LdStLFD, []>;
   }
 
   let mayStore = 1 in {
-    def STXVRL : XX1Form_memOp<31, 653, (outs),
-                               (ins vsrc:$XT, memr:$RA, g8rc:$RB),
-                               "stxvrl $XT, $RA, $RB", IIC_LdStLoad, []>;
-
-    def STXVRLL : XX1Form_memOp<31, 685, (outs),
-                                (ins vsrc:$XT, memr:$RA, g8rc:$RB),
-                                "stxvrll $XT, $RA, $RB", IIC_LdStLoad, []>;
-
+    def STXVRL
+        : XX1Form_memOp<31, 653, (outs), (ins vsrc:$XT, memr:$RA, g8rc:$RB),
+                        "stxvrl $XT, $RA, $RB", IIC_LdStLoad, []>;
+    def STXVRLL
+        : XX1Form_memOp<31, 685, (outs), (ins vsrc:$XT, memr:$RA, g8rc:$RB),
+                        "stxvrll $XT, $RA, $RB", IIC_LdStLoad, []>;
     def STXVPRL : XForm_XTp5_XAB5<31, 717, (outs),
                                   (ins vsrprc:$XTp, memr:$RA, g8rc:$RB),
                                   "stxvprl $XTp, $RA, $RB", IIC_LdStLFD, []>;
-
     def STXVPRLL : XForm_XTp5_XAB5<31, 749, (outs),
                                    (ins vsrprc:$XTp, memr:$RA, g8rc:$RB),
                                    "stxvprll $XTp, $RA, $RB", IIC_LdStLFD, []>;
   }
 }
 
-// Load VSX Vector with Right Length Left-justified.
-def : Pat<(v4i32 (int_ppc_vsx_lxvrl addr:$RA, i64:$RB)), (LXVRL $RA, $RB)>;
-def : Pat<(v4i32 (int_ppc_vsx_lxvrll addr:$RA, i64:$RB)), (LXVRLL $RA, $RB)>;
-def : Pat<(v256i1 (int_ppc_vsx_lxvprl addr:$RA, i64:$RB)), (LXVPRL $RA, $RB)>;
-def : Pat<(v256i1 (int_ppc_vsx_lxvprll addr:$RA, i64:$RB)), (LXVPRLL $RA, $RB)>;
+// Load/Store VSX Vector with Right Length Left-justified.
+// foreach Ty = [v4i32, v2i64, v128i1] in {
+foreach Ty = [v4i32, v2i64] in {
+  def : Pat<(Ty (int_ppc_vsx_lxvrl addr:$RA, i64:$RB)),
+            (LXVRL memr:$RA, g8rc:$RB)>;
+  def : Pat<(Ty (int_ppc_vsx_lxvrll addr:$RA, i64:$RB)),
+            (LXVRLL $RA, $RB)>;
+  def : Pat<(int_ppc_vsx_stxvrl Ty:$XT, addr:$RA, i64:$RB),
+            (STXVRL $XT, $RA, $RB)>;
+  def : Pat<(int_ppc_vsx_stxvrll Ty:$XT, addr:$RA, i64:$RB),
+            (STXVRLL $XT, $RA, $RB)>;
+}
 
-// Store VSX Vector with Right Length Left-justified.
-def : Pat<(int_ppc_vsx_stxvrl v4i32:$XT, addr:$RA, i64:$RB),
-          (STXVRL $XT, $RA, $RB)>;
-def : Pat<(int_ppc_vsx_stxvrll v4i32:$XT, addr:$RA, i64:$RB),
-          (STXVRLL $XT, $RA, $RB)>;
+// Load/Store VSX Vector pair with Right Length Left-justified.
+def : Pat<(v256i1(int_ppc_vsx_lxvprl addr:$RA, i64:$RB)), (LXVPRL $RA, $RB)>;
+def : Pat<(v256i1(int_ppc_vsx_lxvprll addr:$RA, i64:$RB)), (LXVPRLL $RA, $RB)>;
 def : Pat<(int_ppc_vsx_stxvprl v256i1:$XTp, addr:$RA, i64:$RB),
           (STXVPRL $XTp, $RA, $RB)>;
 def : Pat<(int_ppc_vsx_stxvprll v256i1:$XTp, addr:$RA, i64:$RB),
