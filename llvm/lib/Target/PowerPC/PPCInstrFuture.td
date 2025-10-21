@@ -311,6 +311,9 @@ let Predicates = [IsISAFuture] in {
                                        (ins gprc:$RB, gprc:$RS, u2imm:$RIC,
                                            u1imm:$PRS, u1imm:$R),
                                        "tlbiep $RB, $RS, $RIC, $PRS, $R", []>;
+  def TLBIEIO
+      : XForm_RSB5_UIMM2<31, 18, (outs), (ins g8rc:$RB, g8rc:$RS, u2imm:$RIC),
+                         "tlbieio $RB, $RS, $RIC", []>;
   let Interpretation64Bit = 1, isCodeGenOnly = 1 in {
     def TLBIEP8
         : XForm_RSB5_UIMM2_2UIMM1<31, 50, (outs),
