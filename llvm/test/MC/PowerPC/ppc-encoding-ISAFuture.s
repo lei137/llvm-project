@@ -420,9 +420,9 @@
 #CHECK-LE: mtlpl 3, 4                     # encoding: [0x26,0x1a,0x80,0x7c]
 
            paddis 10, 12, 1000000000, 0
-#CHECK-BE: paddis 10, 12, 1000000000, 0   # encoding: [0x06,0x00,0x3b,0x9a,
+#CHECK-BE: paddis 10, 12, 1000000000      # encoding: [0x06,0x00,0x3b,0x9a,
 #CHECK-BE-SAME:                                        0x3d,0x4c,0xca,0x00]
-#CHECK-LE: paddis 10, 12, 1000000000, 0   # encoding: [0x9a,0x3b,0x00,0x06,
+#CHECK-LE: paddis 10, 12, 1000000000      # encoding: [0x9a,0x3b,0x00,0x06,
 #CHECK-LE-SAME:                                        0x00,0xca,0x4c,0x3d]
 
            paddis 10, 0, 1000000000, 1
