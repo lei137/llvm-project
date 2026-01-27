@@ -606,11 +606,11 @@ let Predicates = [HasVSX, IsISAFuture] in {
 // [HasVSX, IsISAFuture]
 
 def : InstAlias<"paddis $RT, $RA, $SI", (PADDIS gprc:$RT, gprc_nor0:$RA,
-                                            s32imm_pcrel:$SI)>;
+                                            s32imm:$SI)>;
 def : InstAlias<"paddis $RT, $RA, $SI", (PADDIS8 g8rc:$RT, g8rc_nox0:$RA,
-                                            s32imm_pcrel:$SI)>;
-def : InstAlias<"plis $RT, $SI", (PADDIS gprc:$RT, ZERO, s32imm_pcrel:$SI)>;
-def : InstAlias<"plis $RT, $SI", (PADDIS8 g8rc:$RT, ZERO8, s32imm_pcrel:$SI)>;
+                                            s32imm:$SI)>;
+def : InstAlias<"plis $RT, $SI", (PADDIS gprc:$RT, ZERO, s32imm:$SI)>;
+def : InstAlias<"plis $RT, $SI", (PADDIS8 g8rc:$RT, ZERO8, s32imm:$SI)>;
 /*
 def : InstAlias<"psubis $RT, $RA, $SI", (PADDIS gprc:$RT, gprc_nor0:$RA,
                                             (NEG s32imm_pcrel:$SI))>;
