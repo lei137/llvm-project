@@ -127,12 +127,28 @@ define double @nearbyint_f64_downward(double %d) strictfp nounwind {
 define float @nearbyint_f32_tonearest(float %f) strictfp nounwind {
 ; P8-LABEL: nearbyint_f32_tonearest:
 ; P8:       # %bb.0:
-; P8-NEXT:    xsrdpi f1, f1
+; P8-NEXT:    mflr r0
+; P8-NEXT:    stdu r1, -112(r1)
+; P8-NEXT:    li r4, 1
+; P8-NEXT:    std r0, 128(r1)
+; P8-NEXT:    bl nearbyintf
+; P8-NEXT:    nop
+; P8-NEXT:    addi r1, r1, 112
+; P8-NEXT:    ld r0, 16(r1)
+; P8-NEXT:    mtlr r0
 ; P8-NEXT:    blr
 ;
 ; P9-LABEL: nearbyint_f32_tonearest:
 ; P9:       # %bb.0:
-; P9-NEXT:    xsrdpi f1, f1
+; P9-NEXT:    mflr r0
+; P9-NEXT:    stdu r1, -32(r1)
+; P9-NEXT:    li r4, 1
+; P9-NEXT:    std r0, 48(r1)
+; P9-NEXT:    bl nearbyintf
+; P9-NEXT:    nop
+; P9-NEXT:    addi r1, r1, 32
+; P9-NEXT:    ld r0, 16(r1)
+; P9-NEXT:    mtlr r0
 ; P9-NEXT:    blr
   %res = call float @llvm.experimental.constrained.nearbyint.f32(
                       float %f,
@@ -145,12 +161,28 @@ define float @nearbyint_f32_tonearest(float %f) strictfp nounwind {
 define double @nearbyint_f64_tonearest(double %d) strictfp nounwind {
 ; P8-LABEL: nearbyint_f64_tonearest:
 ; P8:       # %bb.0:
-; P8-NEXT:    xsrdpi f1, f1
+; P8-NEXT:    mflr r0
+; P8-NEXT:    stdu r1, -112(r1)
+; P8-NEXT:    li r4, 1
+; P8-NEXT:    std r0, 128(r1)
+; P8-NEXT:    bl nearbyint
+; P8-NEXT:    nop
+; P8-NEXT:    addi r1, r1, 112
+; P8-NEXT:    ld r0, 16(r1)
+; P8-NEXT:    mtlr r0
 ; P8-NEXT:    blr
 ;
 ; P9-LABEL: nearbyint_f64_tonearest:
 ; P9:       # %bb.0:
-; P9-NEXT:    xsrdpi f1, f1
+; P9-NEXT:    mflr r0
+; P9-NEXT:    stdu r1, -32(r1)
+; P9-NEXT:    li r4, 1
+; P9-NEXT:    std r0, 48(r1)
+; P9-NEXT:    bl nearbyint
+; P9-NEXT:    nop
+; P9-NEXT:    addi r1, r1, 32
+; P9-NEXT:    ld r0, 16(r1)
+; P9-NEXT:    mtlr r0
 ; P9-NEXT:    blr
   %res = call double @llvm.experimental.constrained.nearbyint.f64(
                       double %d,
@@ -165,9 +197,8 @@ define float @nearbyint_f32_tonearestaway(float %f) strictfp nounwind {
 ; P8:       # %bb.0:
 ; P8-NEXT:    mflr r0
 ; P8-NEXT:    stdu r1, -112(r1)
+; P8-NEXT:    li r4, 4
 ; P8-NEXT:    std r0, 128(r1)
-; P8-NEXT:    .cfi_def_cfa_offset 112
-; P8-NEXT:    .cfi_offset lr, 16
 ; P8-NEXT:    bl nearbyintf
 ; P8-NEXT:    nop
 ; P8-NEXT:    addi r1, r1, 112
@@ -179,9 +210,8 @@ define float @nearbyint_f32_tonearestaway(float %f) strictfp nounwind {
 ; P9:       # %bb.0:
 ; P9-NEXT:    mflr r0
 ; P9-NEXT:    stdu r1, -32(r1)
+; P9-NEXT:    li r4, 4
 ; P9-NEXT:    std r0, 48(r1)
-; P9-NEXT:    .cfi_def_cfa_offset 32
-; P9-NEXT:    .cfi_offset lr, 16
 ; P9-NEXT:    bl nearbyintf
 ; P9-NEXT:    nop
 ; P9-NEXT:    addi r1, r1, 32
@@ -201,9 +231,8 @@ define double @nearbyint_f64_tonearestaway(double %d) strictfp nounwind {
 ; P8:       # %bb.0:
 ; P8-NEXT:    mflr r0
 ; P8-NEXT:    stdu r1, -112(r1)
+; P8-NEXT:    li r4, 4
 ; P8-NEXT:    std r0, 128(r1)
-; P8-NEXT:    .cfi_def_cfa_offset 112
-; P8-NEXT:    .cfi_offset lr, 16
 ; P8-NEXT:    bl nearbyint
 ; P8-NEXT:    nop
 ; P8-NEXT:    addi r1, r1, 112
@@ -215,9 +244,8 @@ define double @nearbyint_f64_tonearestaway(double %d) strictfp nounwind {
 ; P9:       # %bb.0:
 ; P9-NEXT:    mflr r0
 ; P9-NEXT:    stdu r1, -32(r1)
+; P9-NEXT:    li r4, 4
 ; P9-NEXT:    std r0, 48(r1)
-; P9-NEXT:    .cfi_def_cfa_offset 32
-; P9-NEXT:    .cfi_offset lr, 16
 ; P9-NEXT:    bl nearbyint
 ; P9-NEXT:    nop
 ; P9-NEXT:    addi r1, r1, 32
@@ -237,9 +265,8 @@ define float @nearbyint_f32_dynamic(float %f) strictfp nounwind {
 ; P8:       # %bb.0:
 ; P8-NEXT:    mflr r0
 ; P8-NEXT:    stdu r1, -112(r1)
+; P8-NEXT:    li r4, 7
 ; P8-NEXT:    std r0, 128(r1)
-; P8-NEXT:    .cfi_def_cfa_offset 112
-; P8-NEXT:    .cfi_offset lr, 16
 ; P8-NEXT:    bl nearbyintf
 ; P8-NEXT:    nop
 ; P8-NEXT:    addi r1, r1, 112
@@ -251,9 +278,8 @@ define float @nearbyint_f32_dynamic(float %f) strictfp nounwind {
 ; P9:       # %bb.0:
 ; P9-NEXT:    mflr r0
 ; P9-NEXT:    stdu r1, -32(r1)
+; P9-NEXT:    li r4, 7
 ; P9-NEXT:    std r0, 48(r1)
-; P9-NEXT:    .cfi_def_cfa_offset 32
-; P9-NEXT:    .cfi_offset lr, 16
 ; P9-NEXT:    bl nearbyintf
 ; P9-NEXT:    nop
 ; P9-NEXT:    addi r1, r1, 32
@@ -273,9 +299,8 @@ define double @nearbyint_f64_dynamic(double %d) strictfp nounwind {
 ; P8:       # %bb.0:
 ; P8-NEXT:    mflr r0
 ; P8-NEXT:    stdu r1, -112(r1)
+; P8-NEXT:    li r4, 7
 ; P8-NEXT:    std r0, 128(r1)
-; P8-NEXT:    .cfi_def_cfa_offset 112
-; P8-NEXT:    .cfi_offset lr, 16
 ; P8-NEXT:    bl nearbyint
 ; P8-NEXT:    nop
 ; P8-NEXT:    addi r1, r1, 112
@@ -287,9 +312,8 @@ define double @nearbyint_f64_dynamic(double %d) strictfp nounwind {
 ; P9:       # %bb.0:
 ; P9-NEXT:    mflr r0
 ; P9-NEXT:    stdu r1, -32(r1)
+; P9-NEXT:    li r4, 7
 ; P9-NEXT:    std r0, 48(r1)
-; P9-NEXT:    .cfi_def_cfa_offset 32
-; P9-NEXT:    .cfi_offset lr, 16
 ; P9-NEXT:    bl nearbyint
 ; P9-NEXT:    nop
 ; P9-NEXT:    addi r1, r1, 32
@@ -308,45 +332,19 @@ define fp128 @nearbyint_f128_towardzero(fp128 %q) strictfp nounwind {
 ; P8-LABEL: nearbyint_f128_towardzero:
 ; P8:       # %bb.0:
 ; P8-NEXT:    mflr r0
-; P8-NEXT:    stdu r1, -128(r1)
-; P8-NEXT:    std r0, 144(r1)
-; P8-NEXT:    .cfi_def_cfa_offset 128
-; P8-NEXT:    .cfi_offset lr, 16
-; P8-NEXT:    .cfi_offset v31, -16
-; P8-NEXT:    li r3, 112
-; P8-NEXT:    stvx v31, r1, r3 # 16-byte Folded Spill
-; P8-NEXT:    vmr v31, v2
-; P8-NEXT:    xxlor vs1, v31, v31
-; P8-NEXT:    xxswapd vs2, v31
-; P8-NEXT:    bl nearbyintl
+; P8-NEXT:    stdu r1, -112(r1)
+; P8-NEXT:    li r5, 0
+; P8-NEXT:    std r0, 128(r1)
+; P8-NEXT:    bl nearbyintf128
 ; P8-NEXT:    nop
-; P8-NEXT:    xxmrghd v2, vs2, vs1
-; P8-NEXT:    li r3, 112
-; P8-NEXT:    lvx v31, r1, r3 # 16-byte Folded Reload
-; P8-NEXT:    addi r1, r1, 128
+; P8-NEXT:    addi r1, r1, 112
 ; P8-NEXT:    ld r0, 16(r1)
 ; P8-NEXT:    mtlr r0
 ; P8-NEXT:    blr
 ;
 ; P9-LABEL: nearbyint_f128_towardzero:
 ; P9:       # %bb.0:
-; P9-NEXT:    mflr r0
-; P9-NEXT:    stdu r1, -48(r1)
-; P9-NEXT:    std r0, 64(r1)
-; P9-NEXT:    .cfi_def_cfa_offset 48
-; P9-NEXT:    .cfi_offset lr, 16
-; P9-NEXT:    .cfi_offset v31, -16
-; P9-NEXT:    stxv v31, 32(r1) # 16-byte Folded Spill
-; P9-NEXT:    vmr v31, v2
-; P9-NEXT:    xscpsgndp f1, v31, v31
-; P9-NEXT:    xxswapd vs2, v31
-; P9-NEXT:    bl nearbyintl
-; P9-NEXT:    nop
-; P9-NEXT:    xxmrghd v2, vs2, vs1
-; P9-NEXT:    lxv v31, 32(r1) # 16-byte Folded Reload
-; P9-NEXT:    addi r1, r1, 48
-; P9-NEXT:    ld r0, 16(r1)
-; P9-NEXT:    mtlr r0
+; P9-NEXT:    xsrqpi 1, v2, v2, 1
 ; P9-NEXT:    blr
   %res = call fp128 @llvm.experimental.constrained.nearbyint.f128(
                       fp128 %q,
@@ -360,22 +358,12 @@ define fp128 @nearbyint_f128_dynamic(fp128 %q) strictfp nounwind {
 ; P8-LABEL: nearbyint_f128_dynamic:
 ; P8:       # %bb.0:
 ; P8-NEXT:    mflr r0
-; P8-NEXT:    stdu r1, -128(r1)
-; P8-NEXT:    std r0, 144(r1)
-; P8-NEXT:    .cfi_def_cfa_offset 128
-; P8-NEXT:    .cfi_offset lr, 16
-; P8-NEXT:    .cfi_offset v31, -16
-; P8-NEXT:    li r3, 112
-; P8-NEXT:    stvx v31, r1, r3 # 16-byte Folded Spill
-; P8-NEXT:    vmr v31, v2
-; P8-NEXT:    xxlor vs1, v31, v31
-; P8-NEXT:    xxswapd vs2, v31
-; P8-NEXT:    bl nearbyintl
+; P8-NEXT:    stdu r1, -112(r1)
+; P8-NEXT:    li r5, 7
+; P8-NEXT:    std r0, 128(r1)
+; P8-NEXT:    bl nearbyintf128
 ; P8-NEXT:    nop
-; P8-NEXT:    xxmrghd v2, vs2, vs1
-; P8-NEXT:    li r3, 112
-; P8-NEXT:    lvx v31, r1, r3 # 16-byte Folded Reload
-; P8-NEXT:    addi r1, r1, 128
+; P8-NEXT:    addi r1, r1, 112
 ; P8-NEXT:    ld r0, 16(r1)
 ; P8-NEXT:    mtlr r0
 ; P8-NEXT:    blr
@@ -383,20 +371,12 @@ define fp128 @nearbyint_f128_dynamic(fp128 %q) strictfp nounwind {
 ; P9-LABEL: nearbyint_f128_dynamic:
 ; P9:       # %bb.0:
 ; P9-NEXT:    mflr r0
-; P9-NEXT:    stdu r1, -48(r1)
-; P9-NEXT:    std r0, 64(r1)
-; P9-NEXT:    .cfi_def_cfa_offset 48
-; P9-NEXT:    .cfi_offset lr, 16
-; P9-NEXT:    .cfi_offset v31, -16
-; P9-NEXT:    stxv v31, 32(r1) # 16-byte Folded Spill
-; P9-NEXT:    vmr v31, v2
-; P9-NEXT:    xscpsgndp f1, v31, v31
-; P9-NEXT:    xxswapd vs2, v31
-; P9-NEXT:    bl nearbyintl
+; P9-NEXT:    stdu r1, -32(r1)
+; P9-NEXT:    li r5, 7
+; P9-NEXT:    std r0, 48(r1)
+; P9-NEXT:    bl nearbyintf128
 ; P9-NEXT:    nop
-; P9-NEXT:    xxmrghd v2, vs2, vs1
-; P9-NEXT:    lxv v31, 32(r1) # 16-byte Folded Reload
-; P9-NEXT:    addi r1, r1, 48
+; P9-NEXT:    addi r1, r1, 32
 ; P9-NEXT:    ld r0, 16(r1)
 ; P9-NEXT:    mtlr r0
 ; P9-NEXT:    blr

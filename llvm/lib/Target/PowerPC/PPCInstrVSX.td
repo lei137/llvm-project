@@ -923,7 +923,7 @@ let hasSideEffects = 0 in {
   def XSRDPI : XX2Form<60, 73,
                       (outs vsfrc:$XT), (ins vsfrc:$XB),
                       "xsrdpi $XT, $XB", IIC_VecFP,
-                      [(set f64:$XT, (any_fround f64:$XB))]>;
+                      [(set f64:$XT, (any_froundeven f64:$XB))]>;
   def XSRDPIM : XX2Form<60, 121,
                       (outs vsfrc:$XT), (ins vsfrc:$XB),
                       "xsrdpim $XT, $XB", IIC_VecFP,
@@ -940,7 +940,7 @@ let hasSideEffects = 0 in {
   def XVRDPI : XX2Form<60, 201,
                       (outs vsrc:$XT), (ins vsrc:$XB),
                       "xvrdpi $XT, $XB", IIC_VecFP,
-                      [(set v2f64:$XT, (any_fround v2f64:$XB))]>;
+                      [(set v2f64:$XT, (any_froundeven v2f64:$XB))]>;
   def XVRDPIM : XX2Form<60, 249,
                       (outs vsrc:$XT), (ins vsrc:$XB),
                       "xvrdpim $XT, $XB", IIC_VecFP,
@@ -957,7 +957,7 @@ let hasSideEffects = 0 in {
   def XVRSPI : XX2Form<60, 137,
                       (outs vsrc:$XT), (ins vsrc:$XB),
                       "xvrspi $XT, $XB", IIC_VecFP,
-                      [(set v4f32:$XT, (any_fround v4f32:$XB))]>;
+                      [(set v4f32:$XT, (any_froundeven v4f32:$XB))]>;
   def XVRSPIM : XX2Form<60, 185,
                       (outs vsrc:$XT), (ins vsrc:$XB),
                       "xvrspim $XT, $XB", IIC_VecFP,
@@ -2762,6 +2762,9 @@ def : Pat<(v4i32 (int_ppc_vsx_lxvw4x_be ForceXForm:$src)), (LXVW4X ForceXForm:$s
 def : Pat<(v2f64 (int_ppc_vsx_lxvd2x_be ForceXForm:$src)), (LXVD2X ForceXForm:$src)>;
 
 // Rounding for single precision.
+def : Pat<(f32 (any_froundeven f32:$S)),
+          (f32 (COPY_TO_REGCLASS (XSRDPI
+                                   (COPY_TO_REGCLASS $S, VSFRC)), VSSRC))>;
 def : Pat<(f32 (any_fround f32:$S)),
           (f32 (COPY_TO_REGCLASS (XSRDPI
                                    (COPY_TO_REGCLASS $S, VSFRC)), VSSRC))>;

@@ -1273,6 +1273,7 @@ PPCTargetLowering::PPCTargetLowering(const PPCTargetMachine &TM,
       setOperationAction(ISD::STRICT_FCEIL, MVT::f128, Legal);
       setOperationAction(ISD::STRICT_FTRUNC, MVT::f128, Legal);
       setOperationAction(ISD::STRICT_FROUND, MVT::f128, Legal);
+      setOperationAction(ISD::STRICT_FROUNDEVEN, MVT::f128, Legal);
       setOperationAction(ISD::FP_EXTEND, MVT::v2f32, Custom);
       setOperationAction(ISD::BSWAP, MVT::v8i16, Legal);
       setOperationAction(ISD::BSWAP, MVT::v4i32, Legal);
@@ -10454,43 +10455,43 @@ SDValue PPCTargetLowering::LowerSTRICT_FNEARBYINT(SDValue Op,
   unsigned RoundingMode = RoundingModeNode->getZExtValue();
   
   // PowerPC VSX instructions that do NOT raise FE_INEXACT:
-  // - XSRDPIZ: round toward zero (ISD::FTRUNC)
-  // - XSRDPIM: round toward -infinity (ISD::FFLOOR)
-  // - XSRDPIP: round toward +infinity (ISD::FCEIL)
-  // - XSRDPI: round to nearest, ties away from zero (ISD::FROUND)
+  // - XSRDPIZ: round toward zero (ISD::STRICT_FTRUNC)
+  // - XSRDPIM: round toward -infinity (ISD::STRICT_FFLOOR)
+  // - XSRDPIP: round toward +infinity (ISD::STRICT_FCEIL)
+  // - XSRDPI: round to nearest, ties to even (ISD::STRICT_FROUNDEVEN)
   //
-  // PowerPC has no instruction for "round to nearest, ties to even" or
+  // PowerPC has no instruction for "round to nearest, ties away from zero" or
   // "dynamic rounding mode" that doesn't raise FE_INEXACT, so use libcall.
   
   unsigned Opcode;
   switch (RoundingMode) {
   case 0: // TowardZero
-    Opcode = ISD::FTRUNC;
+    Opcode = ISD::STRICT_FTRUNC;
     break;
   case 1: // NearestTiesToEven
-    // No instruction available - use libcall
+    // Let normal pattern matching handle this - XSRDPI maps to froundeven
     return SDValue();
   case 2: // TowardPositive
-    Opcode = ISD::FCEIL;
+    Opcode = ISD::STRICT_FCEIL;
     break;
   case 3: // TowardNegative
-    Opcode = ISD::FFLOOR;
+    Opcode = ISD::STRICT_FFLOOR;
     break;
   case 4: // NearestTiesToAway
-    Opcode = ISD::FROUND;
-    break;
-  case 5: // Dynamic
+    // No instruction available - use libcall
+    return SDValue();
+  case 7: // Dynamic
     // No instruction available - use libcall
     return SDValue();
   default:
     return SDValue();
   }
   
-  // Create the non-strict rounding operation
-  SDValue Result = DAG.getNode(Opcode, dl, VT, Input);
+  // Create the strict rounding operation
+  SDValue Result = DAG.getNode(Opcode, dl, {VT, MVT::Other}, {Chain, Input});
   
   // Return both the result and the chain
-  return DAG.getMergeValues({Result, Chain}, dl);
+  return Result;
 }
 
 /// LowerVECTOR_SHUFFLE - Return the code we lower for VECTOR_SHUFFLE.  If this
