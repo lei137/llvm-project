@@ -1029,8 +1029,9 @@ PPCTargetLowering::PPCTargetLowering(const PPCTargetMachine &TM,
       }
       setOperationAction(ISD::EXTRACT_VECTOR_ELT, MVT::v2f64, Legal);
 
-      // The nearbyint variants are not allowed to raise the inexact exception
-      // so we can only code-gen them with fpexcept.ignore.
+      // The nearbyint variants are not allowed to raise the inexact exception.
+      // We use custom lowering to select appropriate instructions based on
+      // the rounding mode metadata.
       setOperationAction(ISD::STRICT_FNEARBYINT, MVT::f64, Custom);
       setOperationAction(ISD::STRICT_FNEARBYINT, MVT::f32, Custom);
 
@@ -1265,7 +1266,9 @@ PPCTargetLowering::PPCTargetLowering(const PPCTargetMachine &TM,
       setOperationAction(ISD::STRICT_FP_ROUND, MVT::f64, Legal);
       setOperationAction(ISD::STRICT_FP_ROUND, MVT::f32, Legal);
       setOperationAction(ISD::STRICT_FRINT, MVT::f128, Legal);
-      setOperationAction(ISD::STRICT_FNEARBYINT, MVT::f128, Legal);
+      // STRICT_FNEARBYINT: Use custom lowering to select appropriate
+      // instructions based on rounding mode metadata.
+      setOperationAction(ISD::STRICT_FNEARBYINT, MVT::f128, Custom);
       setOperationAction(ISD::STRICT_FFLOOR, MVT::f128, Legal);
       setOperationAction(ISD::STRICT_FCEIL, MVT::f128, Legal);
       setOperationAction(ISD::STRICT_FTRUNC, MVT::f128, Legal);
@@ -10434,6 +10437,62 @@ SDValue PPCTargetLowering::LowerROTL(SDValue Op, SelectionDAG &DAG) const {
   return DAG.getNode(ISD::BITCAST, dl, MVT::v1i128, OROp);
 }
 
+SDValue PPCTargetLowering::LowerSTRICT_FNEARBYINT(SDValue Op,
+                                                   SelectionDAG &DAG) const {
+  SDLoc dl(Op);
+  EVT VT = Op.getValueType();
+  SDValue Chain = Op.getOperand(0);
+  SDValue Input = Op.getOperand(1);
+  
+  // Get the rounding mode from operand 2 (added by SelectionDAGBuilder)
+  auto *RoundingModeNode = dyn_cast<ConstantSDNode>(Op.getOperand(2));
+  if (!RoundingModeNode) {
+    // Should not happen, but fall back to libcall if it does
+    return SDValue();
+  }
+  
+  unsigned RoundingMode = RoundingModeNode->getZExtValue();
+  
+  // PowerPC VSX instructions that do NOT raise FE_INEXACT:
+  // - XSRDPIZ: round toward zero (ISD::FTRUNC)
+  // - XSRDPIM: round toward -infinity (ISD::FFLOOR)
+  // - XSRDPIP: round toward +infinity (ISD::FCEIL)
+  // - XSRDPI: round to nearest, ties away from zero (ISD::FROUND)
+  //
+  // PowerPC has no instruction for "round to nearest, ties to even" or
+  // "dynamic rounding mode" that doesn't raise FE_INEXACT, so use libcall.
+  
+  unsigned Opcode;
+  switch (RoundingMode) {
+  case 0: // TowardZero
+    Opcode = ISD::FTRUNC;
+    break;
+  case 1: // NearestTiesToEven
+    // No instruction available - use libcall
+    return SDValue();
+  case 2: // TowardPositive
+    Opcode = ISD::FCEIL;
+    break;
+  case 3: // TowardNegative
+    Opcode = ISD::FFLOOR;
+    break;
+  case 4: // NearestTiesToAway
+    Opcode = ISD::FROUND;
+    break;
+  case 5: // Dynamic
+    // No instruction available - use libcall
+    return SDValue();
+  default:
+    return SDValue();
+  }
+  
+  // Create the non-strict rounding operation
+  SDValue Result = DAG.getNode(Opcode, dl, VT, Input);
+  
+  // Return both the result and the chain
+  return DAG.getMergeValues({Result, Chain}, dl);
+}
+
 /// LowerVECTOR_SHUFFLE - Return the code we lower for VECTOR_SHUFFLE.  If this
 /// is a shuffle we can handle in a single instruction, return it.  Otherwise,
 /// return the code it can be lowered into.  Worst case, it can always be
@@ -12727,6 +12786,7 @@ SDValue PPCTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) const {
   case ISD::FP_ROUND:
     return LowerFP_ROUND(Op, DAG);
   case ISD::ROTL:               return LowerROTL(Op, DAG);
+  case ISD::STRICT_FNEARBYINT:  return LowerSTRICT_FNEARBYINT(Op, DAG);
 
   // For counter-based loop handling.
   case ISD::INTRINSIC_W_CHAIN:  return SDValue();
@@ -12759,7 +12819,6 @@ SDValue PPCTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) const {
   case ISD::STRICT_LLRINT:
   case ISD::STRICT_LROUND:
   case ISD::STRICT_LLROUND:
-  case ISD::STRICT_FNEARBYINT:
     if (Op->getFlags().hasNoFPExcept())
       return Op;
     return SDValue();

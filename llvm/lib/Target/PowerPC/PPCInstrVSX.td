@@ -2783,20 +2783,17 @@ def : Pat<(v4f32 (any_frint v4f32:$S)), (v4f32 (XVRSPIC $S))>;
 def : Pat<(f64 (any_frint f64:$S)), (f64 (XSRDPIC $S))>;
 def : Pat<(v2f64 (any_frint v2f64:$S)), (v2f64 (XVRDPIC $S))>;
 
-// Rounding without exceptions (nearbyint). Due to strange tblgen behaviour,
-// these need to be defined after the any_frint versions so ISEL will correctly
-// add the chain to the strict versions.
-// TODO: Match strict fp rounding intrinsics with instructions like xsrdpiz when
-// rounding mode is propagated to CodeGen part.
-def : Pat<(f32 (strict_fnearbyint f32:$S)),
-          (f32 (COPY_TO_REGCLASS (XSRDPIC
-                                   (COPY_TO_REGCLASS $S, VSFRC)), VSSRC))>;
-def : Pat<(f64 (strict_fnearbyint f64:$S)),
-          (f64 (XSRDPIC $S))>;
-def : Pat<(v2f64 (strict_fnearbyint v2f64:$S)),
-          (v2f64 (XVRDPIC $S))>;
-def : Pat<(v4f32 (strict_fnearbyint v4f32:$S)),
-          (v4f32 (XVRSPIC $S))>;
+// Rounding without exceptions (nearbyint).
+// XSRDPIC/XVRDPIC/XVRSPIC can raise FE_INEXACT, which violates nearbyint semantics.
+// Instead, we use custom lowering in PPCISelLowering.cpp that checks the rounding
+// mode metadata and selects the appropriate static rounding instruction:
+// - XSRDPI (round to nearest, ties to even) for round.tonearest
+// - XSRDPIM (round toward -infinity) for round.downward
+// - XSRDPIP (round toward +infinity) for round.upward
+// - XSRDPIZ (round toward zero) for round.towardzero
+// - XSRDPI (round to nearest, ties away) for round.tonearestaway
+// These instructions do NOT raise FE_INEXACT.
+// For round.dynamic, we fall back to libcall.
 
 // Materialize a zero-vector of long long
 def : Pat<(v2i64 immAllZerosV),

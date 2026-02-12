@@ -8364,6 +8364,19 @@ void SelectionDAGBuilder::visitConstrainedFPIntrinsic(
     Opers.push_back(
         DAG.getTargetConstant(0, sdl, TLI.getPointerTy(DAG.getDataLayout())));
     break;
+  case ISD::STRICT_FNEARBYINT: {
+    // Add rounding mode as an operand for nearbyint
+    std::optional<RoundingMode> RM = FPI.getRoundingMode();
+    if (RM) {
+      Opers.push_back(DAG.getTargetConstant(
+          static_cast<unsigned>(*RM), sdl, MVT::i32));
+    } else {
+      // Dynamic rounding mode
+      Opers.push_back(DAG.getTargetConstant(
+          static_cast<unsigned>(RoundingMode::Dynamic), sdl, MVT::i32));
+    }
+    break;
+  }
   case ISD::STRICT_FSETCC:
   case ISD::STRICT_FSETCCS: {
     auto *FPCmp = dyn_cast<ConstrainedFPCmpIntrinsic>(&FPI);
