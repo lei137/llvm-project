@@ -10488,9 +10488,10 @@ SDValue PPCTargetLowering::LowerSTRICT_FNEARBYINT(SDValue Op,
   }
   
   // Create the strict rounding operation
-  SDValue Result = DAG.getNode(Opcode, dl, {VT, MVT::Other}, {Chain, Input});
+  SDValue Ops[] = {Chain, Input};
+  SDValue Result = DAG.getNode(Opcode, dl, DAG.getVTList(VT, MVT::Other), Ops);
   
-  // Return both the result and the chain
+  // Return the node (it has both value and chain as results)
   return Result;
 }
 
