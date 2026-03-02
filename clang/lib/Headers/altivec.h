@@ -19314,6 +19314,15 @@ vec_sra(vector signed __int128 __a, vector unsigned __int128 __b) {
 #endif /* __SIZEOF_INT128__ */
 #endif /* __POWER10_VECTOR__ */
 
+/* vec_uncompressh */
+
+#ifdef __POWER_FUTURE_VECTOR__
+static __inline__ vector signed short __ATTRS_o_ai
+vec_uncompressh(vector unsigned char __a, vector unsigned int __b) {
+  return __builtin_altivec_vucmprhn(__a, __b);
+}
+#endif
+
 #ifdef __POWER8_VECTOR__
 #define __bcdadd(__a, __b, __ps) __builtin_ppc_bcdadd((__a), (__b), (__ps))
 #define __bcdsub(__a, __b, __ps) __builtin_ppc_bcdsub((__a), (__b), (__ps))

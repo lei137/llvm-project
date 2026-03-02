@@ -292,6 +292,10 @@ def FeatureP10Vector  : SubtargetFeature<"power10-vector", "HasP10Vector",
                                          "true",
                                          "Enable POWER10 vector instructions",
                                          [FeatureISA3_1, FeatureP9Vector]>;
+def FeatureFutureVector : SubtargetFeature<"future-vector", "HasFutureVector",
+                                           "true",
+                                           "Enable Future vector instructions",
+                                           [FeatureISAFuture, FeatureP10Vector]>;
 // A separate feature for this even though it is equivalent to P9Vector
 // because this is a feature of the implementation rather than the architecture
 // and may go away with future CPU's.
@@ -554,7 +558,8 @@ def ProcessorFeatures {
   // For future CPU we assume that all of the existing features from Power11
   // still exist with the exception of those we know are Power11 specific.
   list<SubtargetFeature> FutureAdditionalFeatures = [DirectivePwrFuture,
-                                                     FeatureISAFuture];
+                                                     FeatureISAFuture,
+                                                     FeatureFutureVector];
   list<SubtargetFeature> FutureSpecificFeatures = [];
   list<SubtargetFeature> FutureInheritableFeatures =
     !listconcat(P11InheritableFeatures, FutureAdditionalFeatures);

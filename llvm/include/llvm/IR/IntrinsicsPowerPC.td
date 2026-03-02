@@ -789,6 +789,11 @@ let TargetPrefix = "ppc" in {  // All intrinsics start with "llvm.ppc.".
       DefaultAttrsIntrinsic<[llvm_v2i64_ty], [llvm_v2i64_ty, llvm_v2i64_ty],
                             [IntrNoMem]>;
 
+  // Vector Uncompress Halfword Intrinsic.
+  def int_ppc_altivec_vucmprhn : ClangBuiltin<"__builtin_altivec_vucmprhn">,
+      DefaultAttrsIntrinsic<[llvm_v8i16_ty], [llvm_v16i8_ty, llvm_v4i32_ty],
+                            [IntrNoMem]>;
+
   // P10 Vector String Isolate Intrinsics.
   def int_ppc_altivec_vstribr : ClangBuiltin<"__builtin_altivec_vstribr">,
       DefaultAttrsIntrinsic<[llvm_v16i8_ty], [llvm_v16i8_ty], [IntrNoMem]>;

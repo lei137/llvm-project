@@ -71,6 +71,7 @@ class LLVM_LIBRARY_VISIBILITY PPCTargetInfo : public TargetInfo {
   bool HasP10Vector = false;
   bool HasPCRelativeMemops = false;
   bool HasQuadwordAtomics = false;
+  bool HasFutureVector = false;
   bool UseLongCalls = false;
 
 protected:

@@ -448,7 +448,8 @@ let Predicates = [HasVSX, IsISAFuture] in {
                           "vupkint4tofp32 $VRT, $VRB, $UIM", []>;
 
   def VUCMPRHN : VXForm_VRTAB5<3, (outs vrrc:$VRT), (ins vrrc:$VRA, vrrc:$VRB),
-                               "vucmprhn $VRT, $VRA, $VRB", []>;
+                               "vucmprhn $VRT, $VRA, $VRB",
+                               [(set v8i16:$VRT, (int_ppc_altivec_vucmprhn v16i8:$VRA, v4i32:$VRB))]>;
   def VUCMPRLN : VXForm_VRTAB5<67, (outs vrrc:$VRT), (ins vrrc:$VRA, vrrc:$VRB),
                                "vucmprln $VRT, $VRA, $VRB", []>;
   def VUCMPRHB
