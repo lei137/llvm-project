@@ -767,8 +767,13 @@ TARGET_BUILTIN(__builtin_altivec_vextddvlx, "V2ULLiV2ULLiV2ULLiUi", "",
 TARGET_BUILTIN(__builtin_altivec_vextddvrx, "V2ULLiV2ULLiV2ULLiUi", "",
                "power10-vector")
 
-// Vector Uncompress Halfword built-in.
+// Vector Uncompress built-ins.
 TARGET_BUILTIN(__builtin_altivec_vucmprhn, "V8SsV16UcV4Ui", "", "future-vector")
+TARGET_BUILTIN(__builtin_altivec_vucmprhb, "V4SiV8UsV8Us", "", "future-vector")
+TARGET_BUILTIN(__builtin_altivec_vucmprhh, "V2SLLiV4UiV16Uc", "", "future-vector")
+TARGET_BUILTIN(__builtin_altivec_vucmprln, "V8SsV16UcV4Ui", "", "future-vector")
+TARGET_BUILTIN(__builtin_altivec_vucmprlb, "V4SiV8UsV8Us", "", "future-vector")
+TARGET_BUILTIN(__builtin_altivec_vucmprlh, "V2SLLiV4UiV16Uc", "", "future-vector")
 
 // P10 Vector rotate built-ins.
 TARGET_BUILTIN(__builtin_altivec_vrlqmi, "V1ULLLiV1ULLLiV1ULLLiV1ULLLi", "",

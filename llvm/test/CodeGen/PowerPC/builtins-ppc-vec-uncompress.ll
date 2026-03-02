@@ -5,6 +5,11 @@
 ; RUN:   -mcpu=future < %s | FileCheck %s
 
 declare <8 x i16> @llvm.ppc.altivec.vucmprhn(<16 x i8>, <4 x i32>)
+declare <8 x i16> @llvm.ppc.altivec.vucmprln(<16 x i8>, <4 x i32>)
+declare <4 x i32> @llvm.ppc.altivec.vucmprhb(<8 x i16>, <8 x i16>)
+declare <4 x i32> @llvm.ppc.altivec.vucmprlb(<8 x i16>, <8 x i16>)
+declare <2 x i64> @llvm.ppc.altivec.vucmprhh(<4 x i32>, <16 x i8>)
+declare <2 x i64> @llvm.ppc.altivec.vucmprlh(<4 x i32>, <16 x i8>)
 
 define <8 x i16> @test_vucmprhn(<16 x i8> %a, <4 x i32> %b) {
 ; CHECK-LABEL: test_vucmprhn:
@@ -14,4 +19,54 @@ define <8 x i16> @test_vucmprhn(<16 x i8> %a, <4 x i32> %b) {
 entry:
   %0 = tail call <8 x i16> @llvm.ppc.altivec.vucmprhn(<16 x i8> %a, <4 x i32> %b)
   ret <8 x i16> %0
+}
+
+define <8 x i16> @test_vucmprln(<16 x i8> %a, <4 x i32> %b) {
+; CHECK-LABEL: test_vucmprln:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    vucmprln 2, 2, 3
+; CHECK-NEXT:    blr
+entry:
+  %0 = tail call <8 x i16> @llvm.ppc.altivec.vucmprln(<16 x i8> %a, <4 x i32> %b)
+  ret <8 x i16> %0
+}
+
+define <4 x i32> @test_vucmprhb(<8 x i16> %a, <8 x i16> %b) {
+; CHECK-LABEL: test_vucmprhb:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    vucmprhb 2, 2, 3
+; CHECK-NEXT:    blr
+entry:
+  %0 = tail call <4 x i32> @llvm.ppc.altivec.vucmprhb(<8 x i16> %a, <8 x i16> %b)
+  ret <4 x i32> %0
+}
+
+define <4 x i32> @test_vucmprlb(<8 x i16> %a, <8 x i16> %b) {
+; CHECK-LABEL: test_vucmprlb:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    vucmprlb 2, 2, 3
+; CHECK-NEXT:    blr
+entry:
+  %0 = tail call <4 x i32> @llvm.ppc.altivec.vucmprlb(<8 x i16> %a, <8 x i16> %b)
+  ret <4 x i32> %0
+}
+
+define <2 x i64> @test_vucmprhh(<4 x i32> %a, <16 x i8> %b) {
+; CHECK-LABEL: test_vucmprhh:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    vucmprhh 2, 2, 3
+; CHECK-NEXT:    blr
+entry:
+  %0 = tail call <2 x i64> @llvm.ppc.altivec.vucmprhh(<4 x i32> %a, <16 x i8> %b)
+  ret <2 x i64> %0
+}
+
+define <2 x i64> @test_vucmprlh(<4 x i32> %a, <16 x i8> %b) {
+; CHECK-LABEL: test_vucmprlh:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    vucmprlh 2, 2, 3
+; CHECK-NEXT:    blr
+entry:
+  %0 = tail call <2 x i64> @llvm.ppc.altivec.vucmprlh(<4 x i32> %a, <16 x i8> %b)
+  ret <2 x i64> %0
 }

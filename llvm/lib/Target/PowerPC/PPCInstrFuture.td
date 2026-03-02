@@ -451,19 +451,24 @@ let Predicates = [HasVSX, IsISAFuture] in {
                                "vucmprhn $VRT, $VRA, $VRB",
                                [(set v8i16:$VRT, (int_ppc_altivec_vucmprhn v16i8:$VRA, v4i32:$VRB))]>;
   def VUCMPRLN : VXForm_VRTAB5<67, (outs vrrc:$VRT), (ins vrrc:$VRA, vrrc:$VRB),
-                               "vucmprln $VRT, $VRA, $VRB", []>;
+                               "vucmprln $VRT, $VRA, $VRB",
+                               [(set v8i16:$VRT, (int_ppc_altivec_vucmprln v16i8:$VRA, v4i32:$VRB))]>;
   def VUCMPRHB
       : VXForm_VRTAB5<131, (outs vrrc:$VRT), (ins vrrc:$VRA, vrrc:$VRB),
-                      "vucmprhb $VRT, $VRA, $VRB", []>;
+                      "vucmprhb $VRT, $VRA, $VRB",
+                      [(set v4i32:$VRT, (int_ppc_altivec_vucmprhb v8i16:$VRA, v8i16:$VRB))]>;
   def VUCMPRLB
       : VXForm_VRTAB5<195, (outs vrrc:$VRT), (ins vrrc:$VRA, vrrc:$VRB),
-                      "vucmprlb $VRT, $VRA, $VRB", []>;
+                      "vucmprlb $VRT, $VRA, $VRB",
+                      [(set v4i32:$VRT, (int_ppc_altivec_vucmprlb v8i16:$VRA, v8i16:$VRB))]>;
   def VUCMPRHH
       : VXForm_VRTAB5<259, (outs vrrc:$VRT), (ins vrrc:$VRA, vrrc:$VRB),
-                      "vucmprhh $VRT, $VRA, $VRB", []>;
+                      "vucmprhh $VRT, $VRA, $VRB",
+                      [(set v2i64:$VRT, (int_ppc_altivec_vucmprhh v4i32:$VRA, v16i8:$VRB))]>;
   def VUCMPRLH
       : VXForm_VRTAB5<323, (outs vrrc:$VRT), (ins vrrc:$VRA, vrrc:$VRB),
-                      "vucmprlh $VRT, $VRA, $VRB", []>;
+                      "vucmprlh $VRT, $VRA, $VRB",
+                      [(set v2i64:$VRT, (int_ppc_altivec_vucmprlh v4i32:$VRA, v16i8:$VRB))]>;
 
   def XVRLW : XX3Form_XTAB6<60, 184, (outs vsrc:$XT), (ins vsrc:$XA, vsrc:$XB),
                             "xvrlw $XT, $XA, $XB",
