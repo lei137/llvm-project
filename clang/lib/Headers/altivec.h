@@ -19314,40 +19314,36 @@ vec_sra(vector signed __int128 __a, vector unsigned __int128 __b) {
 #endif /* __SIZEOF_INT128__ */
 #endif /* __POWER10_VECTOR__ */
 
-/* vec_uncompressh */
+/* vec_uncompress */
 
 #ifdef __POWER_FUTURE_VECTOR__
 static __inline__ vector signed short __ATTRS_o_ai
-vec_uncompressh(vector unsigned char __a, vector unsigned int __b) {
+vec_uncompresshn(vector unsigned char __a, vector unsigned int __b) {
   return __builtin_altivec_vucmprhn(__a, __b);
 }
 
 static __inline__ vector signed int __ATTRS_o_ai
-vec_uncompressh(vector unsigned short __a, vector unsigned short __b) {
+vec_uncompresshb(vector unsigned short __a, vector unsigned short __b) {
   return __builtin_altivec_vucmprhb(__a, __b);
 }
 
 static __inline__ vector signed long long __ATTRS_o_ai
-vec_uncompressh(vector unsigned int __a, vector unsigned char __b) {
+vec_uncompresshh(vector unsigned int __a, vector unsigned char __b) {
   return __builtin_altivec_vucmprhh(__a, __b);
 }
-#endif
 
-/* vec_uncompressl */
-
-#ifdef __POWER_FUTURE_VECTOR__
 static __inline__ vector signed short __ATTRS_o_ai
-vec_uncompressl(vector unsigned char __a, vector unsigned int __b) {
+vec_uncompressln(vector unsigned char __a, vector unsigned int __b) {
   return __builtin_altivec_vucmprln(__a, __b);
 }
 
 static __inline__ vector signed int __ATTRS_o_ai
-vec_uncompressl(vector unsigned short __a, vector unsigned short __b) {
+vec_uncompresslb(vector unsigned short __a, vector unsigned short __b) {
   return __builtin_altivec_vucmprlb(__a, __b);
 }
 
 static __inline__ vector signed long long __ATTRS_o_ai
-vec_uncompressl(vector unsigned int __a, vector unsigned char __b) {
+vec_uncompresslh(vector unsigned int __a, vector unsigned char __b) {
   return __builtin_altivec_vucmprlh(__a, __b);
 }
 #endif

@@ -7,7 +7,7 @@
 
 #include <altivec.h>
 
-// CHECK-LABEL: @test_vec_uncompressh(
+// CHECK-LABEL: @test_vec_uncompresshn(
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[__A_ADDR_I:%.*]] = alloca <16 x i8>, align 16
 // CHECK-NEXT:    [[__B_ADDR_I:%.*]] = alloca <4 x i32>, align 16
@@ -24,8 +24,8 @@
 // CHECK-NEXT:    [[TMP4:%.*]] = call <8 x i16> @llvm.ppc.altivec.vucmprhn(<16 x i8> [[TMP2]], <4 x i32> [[TMP3]])
 // CHECK-NEXT:    ret <8 x i16> [[TMP4]]
 //
-__attribute__((noinline)) vector signed short test_vec_uncompressh(vector unsigned char a, vector unsigned int b) {
-  return vec_uncompressh(a, b);
+__attribute__((noinline)) vector signed short test_vec_uncompresshn(vector unsigned char a, vector unsigned int b) {
+  return vec_uncompresshn(a, b);
 }
 
 // CHECK-LABEL: @test_builtin_altivec_vucmprhn(
@@ -43,7 +43,7 @@ __attribute__((noinline)) vector signed short test_builtin_altivec_vucmprhn(vect
   return __builtin_altivec_vucmprhn(a, b);
 }
 
-// CHECK-LABEL: @test_vec_uncompressh_short(
+// CHECK-LABEL: @test_vec_uncompresshb(
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[__A_ADDR_I:%.*]] = alloca <8 x i16>, align 16
 // CHECK-NEXT:    [[__B_ADDR_I:%.*]] = alloca <8 x i16>, align 16
@@ -60,11 +60,11 @@ __attribute__((noinline)) vector signed short test_builtin_altivec_vucmprhn(vect
 // CHECK-NEXT:    [[TMP4:%.*]] = call <4 x i32> @llvm.ppc.altivec.vucmprhb(<8 x i16> [[TMP2]], <8 x i16> [[TMP3]])
 // CHECK-NEXT:    ret <4 x i32> [[TMP4]]
 //
-__attribute__((noinline)) vector signed int test_vec_uncompressh_short(vector unsigned short a, vector unsigned short b) {
-  return vec_uncompressh(a, b);
+__attribute__((noinline)) vector signed int test_vec_uncompresshb(vector unsigned short a, vector unsigned short b) {
+  return vec_uncompresshb(a, b);
 }
 
-// CHECK-LABEL: @test_vec_uncompressh_int(
+// CHECK-LABEL: @test_vec_uncompresshh(
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[__A_ADDR_I:%.*]] = alloca <4 x i32>, align 16
 // CHECK-NEXT:    [[__B_ADDR_I:%.*]] = alloca <16 x i8>, align 16
@@ -81,11 +81,11 @@ __attribute__((noinline)) vector signed int test_vec_uncompressh_short(vector un
 // CHECK-NEXT:    [[TMP4:%.*]] = call <2 x i64> @llvm.ppc.altivec.vucmprhh(<4 x i32> [[TMP2]], <16 x i8> [[TMP3]])
 // CHECK-NEXT:    ret <2 x i64> [[TMP4]]
 //
-__attribute__((noinline)) vector signed long long test_vec_uncompressh_int(vector unsigned int a, vector unsigned char b) {
-  return vec_uncompressh(a, b);
+__attribute__((noinline)) vector signed long long test_vec_uncompresshh(vector unsigned int a, vector unsigned char b) {
+  return vec_uncompresshh(a, b);
 }
 
-// CHECK-LABEL: @test_vec_uncompressl(
+// CHECK-LABEL: @test_vec_uncompressln(
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[__A_ADDR_I:%.*]] = alloca <16 x i8>, align 16
 // CHECK-NEXT:    [[__B_ADDR_I:%.*]] = alloca <4 x i32>, align 16
@@ -102,11 +102,11 @@ __attribute__((noinline)) vector signed long long test_vec_uncompressh_int(vecto
 // CHECK-NEXT:    [[TMP4:%.*]] = call <8 x i16> @llvm.ppc.altivec.vucmprln(<16 x i8> [[TMP2]], <4 x i32> [[TMP3]])
 // CHECK-NEXT:    ret <8 x i16> [[TMP4]]
 //
-__attribute__((noinline)) vector signed short test_vec_uncompressl(vector unsigned char a, vector unsigned int b) {
-  return vec_uncompressl(a, b);
+__attribute__((noinline)) vector signed short test_vec_uncompressln(vector unsigned char a, vector unsigned int b) {
+  return vec_uncompressln(a, b);
 }
 
-// CHECK-LABEL: @test_vec_uncompressl_short(
+// CHECK-LABEL: @test_vec_uncompresslb(
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[__A_ADDR_I:%.*]] = alloca <8 x i16>, align 16
 // CHECK-NEXT:    [[__B_ADDR_I:%.*]] = alloca <8 x i16>, align 16
@@ -123,11 +123,11 @@ __attribute__((noinline)) vector signed short test_vec_uncompressl(vector unsign
 // CHECK-NEXT:    [[TMP4:%.*]] = call <4 x i32> @llvm.ppc.altivec.vucmprlb(<8 x i16> [[TMP2]], <8 x i16> [[TMP3]])
 // CHECK-NEXT:    ret <4 x i32> [[TMP4]]
 //
-__attribute__((noinline)) vector signed int test_vec_uncompressl_short(vector unsigned short a, vector unsigned short b) {
-  return vec_uncompressl(a, b);
+__attribute__((noinline)) vector signed int test_vec_uncompresslb(vector unsigned short a, vector unsigned short b) {
+  return vec_uncompresslb(a, b);
 }
 
-// CHECK-LABEL: @test_vec_uncompressl_int(
+// CHECK-LABEL: @test_vec_uncompresslh(
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[__A_ADDR_I:%.*]] = alloca <4 x i32>, align 16
 // CHECK-NEXT:    [[__B_ADDR_I:%.*]] = alloca <16 x i8>, align 16
@@ -144,8 +144,8 @@ __attribute__((noinline)) vector signed int test_vec_uncompressl_short(vector un
 // CHECK-NEXT:    [[TMP4:%.*]] = call <2 x i64> @llvm.ppc.altivec.vucmprlh(<4 x i32> [[TMP2]], <16 x i8> [[TMP3]])
 // CHECK-NEXT:    ret <2 x i64> [[TMP4]]
 //
-__attribute__((noinline)) vector signed long long test_vec_uncompressl_int(vector unsigned int a, vector unsigned char b) {
-  return vec_uncompressl(a, b);
+__attribute__((noinline)) vector signed long long test_vec_uncompresslh(vector unsigned int a, vector unsigned char b) {
+  return vec_uncompresslh(a, b);
 }
 
 // Made with Bob

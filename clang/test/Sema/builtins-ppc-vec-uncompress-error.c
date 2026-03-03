@@ -6,32 +6,18 @@
 
 #include <altivec.h>
 
-// Test that valid overloads work correctly
-void test_vec_uncompressh_valid() {
+// Test valid calls for all wrapper functions
+void test_valid_calls() {
   vector unsigned char a;
   vector unsigned int b;
   vector unsigned short e;
 
-  // Valid calls for each overload
-  vector signed short res1 = vec_uncompressh(a, b);
-  vector signed int res2 = vec_uncompressh(e, e);
-  vector signed long long res3 = vec_uncompressh(b, a);
-}
-
-// Test that invalid types produce errors
-void test_vec_uncompressh_invalid() {
-  vector unsigned char a;
-  vector unsigned int b;
-  vector float f;
-  vector double d;
-
-  // Invalid - no matching overload (float/double types not supported)
-  vector signed short res1 = vec_uncompressh(f, b); // expected-error {{no matching function for call to 'vec_uncompressh'}}
-  // expected-note@altivec.h:* 3 {{candidate function not viable}}
-  vector signed short res2 = vec_uncompressh(a, f); // expected-error {{no matching function for call to 'vec_uncompressh'}}
-  // expected-note@altivec.h:* 3 {{candidate function not viable}}
-  vector signed short res3 = vec_uncompressh(d, b); // expected-error {{no matching function for call to 'vec_uncompressh'}}
-  // expected-note@altivec.h:* 3 {{candidate function not viable}}
+  vector signed short res1 = vec_uncompresshn(a, b);
+  vector signed int res2 = vec_uncompresshb(e, e);
+  vector signed long long res3 = vec_uncompresshh(b, a);
+  vector signed short res4 = vec_uncompressln(a, b);
+  vector signed int res5 = vec_uncompresslb(e, e);
+  vector signed long long res6 = vec_uncompresslh(b, a);
 }
 
 // Test builtin functions with strict type checking
@@ -77,31 +63,6 @@ void test_builtin_vucmprhh() {
   vector signed long long res2 = __builtin_altivec_vucmprhh(c, b); // expected-error {{incompatible type}}
   vector signed long long res3 = __builtin_altivec_vucmprhh(a, c); // expected-error {{incompatible type}}
   vector signed long long res4 = __builtin_altivec_vucmprhh(d, b); // expected-error {{incompatible type}}
-}
-
-// Test vec_uncompressl valid overloads
-void test_vec_uncompressl_valid() {
-  vector unsigned char a;
-  vector unsigned int b;
-  vector unsigned short e;
-
-  // Valid calls for each overload
-  vector signed short res1 = vec_uncompressl(a, b);
-  vector signed int res2 = vec_uncompressl(e, e);
-  vector signed long long res3 = vec_uncompressl(b, a);
-}
-
-// Test vec_uncompressl invalid types
-void test_vec_uncompressl_invalid() {
-  vector unsigned char a;
-  vector unsigned int b;
-  vector float f;
-
-  // Invalid - no matching overload
-  vector signed short res1 = vec_uncompressl(f, b); // expected-error {{no matching function for call to 'vec_uncompressl'}}
-  // expected-note@altivec.h:* 3 {{candidate function not viable}}
-  vector signed short res2 = vec_uncompressl(a, f); // expected-error {{no matching function for call to 'vec_uncompressl'}}
-  // expected-note@altivec.h:* 3 {{candidate function not viable}}
 }
 
 void test_builtin_vucmprln() {
