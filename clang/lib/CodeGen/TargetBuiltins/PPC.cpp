@@ -1145,6 +1145,23 @@ Value *CodeGenFunction::EmitPPCBuiltinExpr(unsigned BuiltinID,
       llvm::Function *F = CGM.getIntrinsic(ID);
       return Builder.CreateCall(F, Ops, "");
     }
+    // Handle AES encrypt paired builtins - they return a value directly
+    // For variant builtins, add the appropriate immediate value
+    if (BuiltinID == PPC::BI__builtin_aes_encrypt_paired ||
+        BuiltinID == PPC::BI__builtin_aes128_encrypt_paired ||
+        BuiltinID == PPC::BI__builtin_aes192_encrypt_paired ||
+        BuiltinID == PPC::BI__builtin_aes256_encrypt_paired) {
+      if (BuiltinID == PPC::BI__builtin_aes128_encrypt_paired) {
+        Ops.push_back(llvm::ConstantInt::get(Int32Ty, 0));
+      } else if (BuiltinID == PPC::BI__builtin_aes192_encrypt_paired) {
+        Ops.push_back(llvm::ConstantInt::get(Int32Ty, 1));
+      } else if (BuiltinID == PPC::BI__builtin_aes256_encrypt_paired) {
+        Ops.push_back(llvm::ConstantInt::get(Int32Ty, 2));
+      }
+      // For base builtin, Ops already has all 3 arguments
+      llvm::Function *F = CGM.getIntrinsic(ID);
+      return Builder.CreateCall(F, Ops, "");
+    }
     SmallVector<Value*, 4> CallOps;
     if (Accumulate) {
       Address Addr = EmitPointerWithAlignment(E->getArg(0));
