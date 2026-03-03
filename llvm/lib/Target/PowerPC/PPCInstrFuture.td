@@ -479,7 +479,11 @@ let Predicates = [HasVSX, IsISAFuture] in {
                                                                    i32:$M))]>;
   def XXAESDECP : XX3Form_XTABp5_M2<202, (outs vsrprc:$XTp),
                                     (ins vsrprc:$XAp, vsrprc:$XBp, u2imm:$M),
-                                    "xxaesdecp $XTp, $XAp, $XBp, $M", []>;
+                                    "xxaesdecp $XTp, $XAp, $XBp, $M",
+                                    [(set v256i1:$XTp,
+                                      (int_ppc_aes_decrypt_paired v256i1:$XAp,
+                                                                   v256i1:$XBp,
+                                                                   i32:$M))]>;
   def XXAESGENLKP : XX3Form_XTBp5_M2<420, (outs vsrprc:$XTp),
                                      (ins vsrprc:$XBp, u2imm:$M),
                                      "xxaesgenlkp $XTp, $XBp, $M", []>;

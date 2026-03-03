@@ -1721,12 +1721,16 @@ let TargetPrefix = "ppc" in {
       DefaultAttrsIntrinsic<[llvm_v16i8_ty, llvm_v16i8_ty],
                             [llvm_v256i1_ty], [IntrNoMem]>;
 
-  // AES Encrypt Paired Instructions
+  // AES Encrypt Paired Instructions.
   def int_ppc_aes_encrypt_paired :
       DefaultAttrsIntrinsic<[llvm_v256i1_ty],
                             [llvm_v256i1_ty, llvm_v256i1_ty, llvm_i32_ty],
                             [IntrNoMem, ImmArg<ArgIndex<2>>]>;
-
+  // AES Decrypt Paired Instructions.
+  def int_ppc_aes_decrypt_paired :
+      DefaultAttrsIntrinsic<[llvm_v256i1_ty],
+                            [llvm_v256i1_ty, llvm_v256i1_ty, llvm_i32_ty],
+                            [IntrNoMem, ImmArg<ArgIndex<2>>]>;
   def int_ppc_mma_assemble_acc :
       DefaultAttrsIntrinsic<[llvm_v512i1_ty],
                             [llvm_v16i8_ty, llvm_v16i8_ty, llvm_v16i8_ty,
