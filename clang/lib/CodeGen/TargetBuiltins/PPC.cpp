@@ -1151,13 +1151,12 @@ Value *CodeGenFunction::EmitPPCBuiltinExpr(unsigned BuiltinID,
         BuiltinID == PPC::BI__builtin_aes128_encrypt_paired ||
         BuiltinID == PPC::BI__builtin_aes192_encrypt_paired ||
         BuiltinID == PPC::BI__builtin_aes256_encrypt_paired) {
-      if (BuiltinID == PPC::BI__builtin_aes128_encrypt_paired) {
+      if (BuiltinID == PPC::BI__builtin_aes128_encrypt_paired)
         Ops.push_back(llvm::ConstantInt::get(Int32Ty, 0));
-      } else if (BuiltinID == PPC::BI__builtin_aes192_encrypt_paired) {
+      else if (BuiltinID == PPC::BI__builtin_aes192_encrypt_paired)
         Ops.push_back(llvm::ConstantInt::get(Int32Ty, 1));
-      } else if (BuiltinID == PPC::BI__builtin_aes256_encrypt_paired) {
+      else if (BuiltinID == PPC::BI__builtin_aes256_encrypt_paired)
         Ops.push_back(llvm::ConstantInt::get(Int32Ty, 2));
-      }
       // For base builtin, Ops already has all 3 arguments.
       llvm::Function *F = CGM.getIntrinsic(ID);
       return Builder.CreateCall(F, Ops, "");
@@ -1168,14 +1167,27 @@ Value *CodeGenFunction::EmitPPCBuiltinExpr(unsigned BuiltinID,
         BuiltinID == PPC::BI__builtin_aes128_decrypt_paired ||
         BuiltinID == PPC::BI__builtin_aes192_decrypt_paired ||
         BuiltinID == PPC::BI__builtin_aes256_decrypt_paired) {
-      if (BuiltinID == PPC::BI__builtin_aes128_decrypt_paired) {
+      if (BuiltinID == PPC::BI__builtin_aes128_decrypt_paired)
         Ops.push_back(llvm::ConstantInt::get(Int32Ty, 0));
-      } else if (BuiltinID == PPC::BI__builtin_aes192_decrypt_paired) {
+      else if (BuiltinID == PPC::BI__builtin_aes192_decrypt_paired)
         Ops.push_back(llvm::ConstantInt::get(Int32Ty, 1));
-      } else if (BuiltinID == PPC::BI__builtin_aes256_decrypt_paired) {
+      else if (BuiltinID == PPC::BI__builtin_aes256_decrypt_paired)
         Ops.push_back(llvm::ConstantInt::get(Int32Ty, 2));
-      }
       // For base builtin, Ops already has all 3 arguments.
+      llvm::Function *F = CGM.getIntrinsic(ID);
+      return Builder.CreateCall(F, Ops, "");
+    }
+    if (BuiltinID == PPC::BI__builtin_aes_genlastkey_paired ||
+        BuiltinID == PPC::BI__builtin_aes128_genlastkey_paired ||
+        BuiltinID == PPC::BI__builtin_aes192_genlastkey_paired ||
+        BuiltinID == PPC::BI__builtin_aes256_genlastkey_paired) {
+      if (BuiltinID == PPC::BI__builtin_aes128_genlastkey_paired)
+        Ops.push_back(llvm::ConstantInt::get(Int32Ty, 0));
+      else if (BuiltinID == PPC::BI__builtin_aes192_genlastkey_paired)
+        Ops.push_back(llvm::ConstantInt::get(Int32Ty, 1));
+      else if (BuiltinID == PPC::BI__builtin_aes256_genlastkey_paired)
+        Ops.push_back(llvm::ConstantInt::get(Int32Ty, 2));
+      // For base builtin, Ops already has all 2 arguments.
       llvm::Function *F = CGM.getIntrinsic(ID);
       return Builder.CreateCall(F, Ops, "");
     }
