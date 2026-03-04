@@ -652,10 +652,8 @@ let Predicates = [HasVSX, IsISAFuture] in {
                                                    vsrprc:$XBp, 1)>;
   def : InstAlias<"xxaes256genlkp $XTp, $XBp", (XXAESGENLKP vsrprc:$XTp,
                                                    vsrprc:$XBp, 2)>;
-
-  // Galois Field Multiplication aliases for assembly parsing
-  def : InstAlias<"xxgfmul128gcm $XT, $XA, $XB", (XXGFMUL128 vsrc:$XT,
-                                                    vsrc:$XA, vsrc:$XB, 0)>;
-  def : InstAlias<"xxgfmul128xts $XT, $XA, $XB", (XXGFMUL128 vsrc:$XT,
-                                                    vsrc:$XA, vsrc:$XB, 1)>;
+  def : InstAlias<"xxgfmul128gcm $XT, $XA, $XB", (XXGFMUL128 vsrc:$XT, vsrc:$XA,
+                                                     vsrc:$XB, 0)>;
+  def : InstAlias<"xxgfmul128xts $XT, $XA, $XB", (XXGFMUL128 vsrc:$XT, vsrc:$XA,
+                                                     vsrc:$XB, 1)>;
 }

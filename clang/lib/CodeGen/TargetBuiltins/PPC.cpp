@@ -1191,7 +1191,6 @@ Value *CodeGenFunction::EmitPPCBuiltinExpr(unsigned BuiltinID,
       llvm::Function *F = CGM.getIntrinsic(ID);
       return Builder.CreateCall(F, Ops, "");
     }
-    SmallVector<Value*, 4> CallOps;
     if (BuiltinID == PPC::BI__builtin_galois_field_mult ||
         BuiltinID == PPC::BI__builtin_galois_field_mult_gcm ||
         BuiltinID == PPC::BI__builtin_galois_field_mult_xts) {
@@ -1203,6 +1202,7 @@ Value *CodeGenFunction::EmitPPCBuiltinExpr(unsigned BuiltinID,
       llvm::Function *F = CGM.getIntrinsic(ID);
       return Builder.CreateCall(F, Ops, "");
     }
+    SmallVector<Value*, 4> CallOps;
     if (Accumulate) {
       Address Addr = EmitPointerWithAlignment(E->getArg(0));
       Value *Acc = Builder.CreateLoad(Addr);
