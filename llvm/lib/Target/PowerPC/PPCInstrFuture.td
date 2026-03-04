@@ -494,11 +494,7 @@ let Predicates = [HasVSX, IsISAFuture] in {
   // Extended opcode is 26 (bits 24-28), with P bit at position 23
   def XXGFMUL128 : XX3Form_XTAB6_P1<26, (outs vsrc:$XT),
                                     (ins vsrc:$XA, vsrc:$XB, u1imm:$P),
-                                    "xxgfmul128 $XT, $XA, $XB, $P",
-                                    [(set v16i8:$XT,
-                                          (int_ppc_galois_field_mult v16i8:$XA,
-                                                                     v16i8:$XB,
-                                                                     u1imm_timm:$P))]>;
+                                    "xxgfmul128 $XT, $XA, $XB, $P", []>;
 
   // VSX Vector Integer Arithmetic Instructions
   def XVADDUWM : XX3Form_XTAB6<60, 131, (outs vsrc:$XT), (ins vsrc:$XA, vsrc:$XB),
@@ -613,6 +609,10 @@ def : Pat<(int_ppc_vsx_stxvprl v256i1:$XTp, addr:$RA, i64:$RB), (STXVPRL $XTp,
                                                                     $RA, $RB)>;
 def : Pat<(int_ppc_vsx_stxvprll v256i1:$XTp, addr:$RA, i64:$RB), (STXVPRLL $XTp,
                                                                      $RA, $RB)>;
+
+def: Pat<(v16i8 (int_ppc_galois_field_mult v16i8:$XA, v16i8:$XB, u1imm_timm:$IMM)),
+         (COPY_TO_REGCLASS (XXGFMUL128 (COPY_TO_REGCLASS $XA, VSRC),
+                                       (COPY_TO_REGCLASS $XB, VSRC), $IMM), VSRC)>;
 
 // Regular load/store patterns for v256i1 (for ISA Future)
 let Predicates = [PairedVectorMemops, IsISAFuture] in {
