@@ -470,28 +470,23 @@ let Predicates = [HasVSX, IsISAFuture] in {
                                                  v4i32:$XB))]>;
 
   // AES Acceleration Instructions
-  def XXAESENCP : XX3Form_XTABp5_M2<194, (outs vsrprc:$XTp),
-                                    (ins vsrprc:$XAp, vsrprc:$XBp, u2imm:$M),
-                                    "xxaesencp $XTp, $XAp, $XBp, $M",
-                                    [(set v256i1:$XTp,
-                                      (int_ppc_aes_encrypt_paired v256i1:$XAp,
-                                                                   v256i1:$XBp,
-                                                                   u2imm_timm:$M))]>;
-  def XXAESDECP : XX3Form_XTABp5_M2<202, (outs vsrprc:$XTp),
-                                    (ins vsrprc:$XAp, vsrprc:$XBp, u2imm:$M),
-                                    "xxaesdecp $XTp, $XAp, $XBp, $M",
-                                    [(set v256i1:$XTp,
-                                      (int_ppc_aes_decrypt_paired v256i1:$XAp,
-                                                                   v256i1:$XBp,
-                                                                   u2imm_timm:$M))]>;
-  def XXAESGENLKP : XX3Form_XTBp5_M2<420, (outs vsrprc:$XTp),
-                                     (ins vsrprc:$XBp, u2imm:$M),
-                                     "xxaesgenlkp $XTp, $XBp, $M",
-                                     [(set v256i1:$XTp,
-                                       (int_ppc_aes_genlastkey_paired v256i1:$XBp,
-                                                                       u2imm_timm:$M))]>;
-  // Galois Field Multiplication instruction
-  // Extended opcode is 26 (bits 24-28), with P bit at position 23
+  def XXAESENCP
+      : XX3Form_XTABp5_M2<194, (outs vsrprc:$XTp),
+                          (ins vsrprc:$XAp, vsrprc:$XBp, u2imm:$M),
+                          "xxaesencp $XTp, $XAp, $XBp, $M",
+                          [(set v256i1:$XTp,
+                                (int_ppc_aes_encrypt_paired v256i1:$XAp, v256i1:$XBp, u2imm_timm:$M))]>;
+  def XXAESDECP
+      : XX3Form_XTABp5_M2<202, (outs vsrprc:$XTp),
+                          (ins vsrprc:$XAp, vsrprc:$XBp, u2imm:$M),
+                          "xxaesdecp $XTp, $XAp, $XBp, $M",
+                          [(set v256i1:$XTp,
+                                (int_ppc_aes_decrypt_paired v256i1:$XAp, v256i1:$XBp, u2imm_timm:$M))]>;
+  def XXAESGENLKP
+      : XX3Form_XTBp5_M2<420, (outs vsrprc:$XTp), (ins vsrprc:$XBp, u2imm:$M),
+                         "xxaesgenlkp $XTp, $XBp, $M",
+                         [(set v256i1:$XTp,
+                               (int_ppc_aes_genlastkey_paired v256i1:$XBp, u2imm_timm:$M))]>;
   def XXGFMUL128 : XX3Form_XTAB6_P1<26, (outs vsrc:$XT),
                                     (ins vsrc:$XA, vsrc:$XB, u1imm:$P),
                                     "xxgfmul128 $XT, $XA, $XB, $P", []>;
