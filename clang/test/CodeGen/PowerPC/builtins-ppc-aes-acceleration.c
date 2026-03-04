@@ -4,13 +4,14 @@
 // RUN: %clang_cc1 -O3 -triple powerpc64-unknown-unknown -target-cpu future \
 // RUN:   -emit-llvm %s -o - | FileCheck %s
 
-// CHECK-LABEL: define dso_local void @test_aes_encrypt_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef readonly captures(none) [[VPP2:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0:[0-9]+]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
-// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2]], align 32
+// Made with AI
+
+// CHECK-LABEL: @test_aes_encrypt_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6:![0-9]+]]
+// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <256 x i1> @llvm.ppc.aes.encrypt.paired(<256 x i1> [[TMP0]], <256 x i1> [[TMP1]], i32 0)
-// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes_encrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsigned char *resp) {
@@ -20,13 +21,12 @@ void test_aes_encrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsigned 
   *((__vector_pair *)resp) = res;
 }
 
-// CHECK-LABEL: define dso_local void @test_aes128_encrypt_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef readonly captures(none) [[VPP2:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
-// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2]], align 32
+// CHECK-LABEL: @test_aes128_encrypt_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <256 x i1> @llvm.ppc.aes.encrypt.paired(<256 x i1> [[TMP0]], <256 x i1> [[TMP1]], i32 0)
-// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes128_encrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsigned char *resp) {
@@ -36,13 +36,12 @@ void test_aes128_encrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsign
   *((__vector_pair *)resp) = res;
 }
 
-// CHECK-LABEL: define dso_local void @test_aes192_encrypt_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef readonly captures(none) [[VPP2:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
-// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2]], align 32
+// CHECK-LABEL: @test_aes192_encrypt_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <256 x i1> @llvm.ppc.aes.encrypt.paired(<256 x i1> [[TMP0]], <256 x i1> [[TMP1]], i32 1)
-// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes192_encrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsigned char *resp) {
@@ -52,13 +51,12 @@ void test_aes192_encrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsign
   *((__vector_pair *)resp) = res;
 }
 
-// CHECK-LABEL: define dso_local void @test_aes256_encrypt_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef readonly captures(none) [[VPP2:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
-// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2]], align 32
+// CHECK-LABEL: @test_aes256_encrypt_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <256 x i1> @llvm.ppc.aes.encrypt.paired(<256 x i1> [[TMP0]], <256 x i1> [[TMP1]], i32 2)
-// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes256_encrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsigned char *resp) {
@@ -68,13 +66,12 @@ void test_aes256_encrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsign
   *((__vector_pair *)resp) = res;
 }
 
-// CHECK-LABEL: define dso_local void @test_aes_decrypt_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef readonly captures(none) [[VPP2:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
-// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2]], align 32
+// CHECK-LABEL: @test_aes_decrypt_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <256 x i1> @llvm.ppc.aes.decrypt.paired(<256 x i1> [[TMP0]], <256 x i1> [[TMP1]], i32 0)
-// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes_decrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsigned char *resp) {
@@ -84,13 +81,12 @@ void test_aes_decrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsigned 
   *((__vector_pair *)resp) = res;
 }
 
-// CHECK-LABEL: define dso_local void @test_aes128_decrypt_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef readonly captures(none) [[VPP2:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
-// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2]], align 32
+// CHECK-LABEL: @test_aes128_decrypt_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <256 x i1> @llvm.ppc.aes.decrypt.paired(<256 x i1> [[TMP0]], <256 x i1> [[TMP1]], i32 0)
-// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes128_decrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsigned char *resp) {
@@ -100,13 +96,12 @@ void test_aes128_decrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsign
   *((__vector_pair *)resp) = res;
 }
 
-// CHECK-LABEL: define dso_local void @test_aes192_decrypt_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef readonly captures(none) [[VPP2:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
-// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2]], align 32
+// CHECK-LABEL: @test_aes192_decrypt_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <256 x i1> @llvm.ppc.aes.decrypt.paired(<256 x i1> [[TMP0]], <256 x i1> [[TMP1]], i32 1)
-// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes192_decrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsigned char *resp) {
@@ -116,13 +111,12 @@ void test_aes192_decrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsign
   *((__vector_pair *)resp) = res;
 }
 
-// CHECK-LABEL: define dso_local void @test_aes256_decrypt_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef readonly captures(none) [[VPP2:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
-// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2]], align 32
+// CHECK-LABEL: @test_aes256_decrypt_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
+// CHECK-NEXT:    [[TMP1:%.*]] = load <256 x i1>, ptr [[VPP2:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP2:%.*]] = tail call <256 x i1> @llvm.ppc.aes.decrypt.paired(<256 x i1> [[TMP0]], <256 x i1> [[TMP1]], i32 2)
-// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP2]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes256_decrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsigned char *resp) {
@@ -131,12 +125,11 @@ void test_aes256_decrypt_paired(unsigned char *vpp1, unsigned char *vpp2, unsign
   __vector_pair res = __builtin_aes256_decrypt_paired(vp1, vp2);
   *((__vector_pair *)resp) = res;
 }
-// CHECK-LABEL: define dso_local void @test_aes_genlastkey_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
+// CHECK-LABEL: @test_aes_genlastkey_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <256 x i1> @llvm.ppc.aes.genlastkey.paired(<256 x i1> [[TMP0]], i32 0)
-// CHECK-NEXT:    store <256 x i1> [[TMP1]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP1]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes_genlastkey_paired(unsigned char *vpp1, unsigned char *resp) {
@@ -145,12 +138,11 @@ void test_aes_genlastkey_paired(unsigned char *vpp1, unsigned char *resp) {
   *((__vector_pair *)resp) = res;
 }
 
-// CHECK-LABEL: define dso_local void @test_aes128_genlastkey_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
+// CHECK-LABEL: @test_aes128_genlastkey_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <256 x i1> @llvm.ppc.aes.genlastkey.paired(<256 x i1> [[TMP0]], i32 0)
-// CHECK-NEXT:    store <256 x i1> [[TMP1]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP1]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes128_genlastkey_paired(unsigned char *vpp1, unsigned char *resp) {
@@ -159,12 +151,11 @@ void test_aes128_genlastkey_paired(unsigned char *vpp1, unsigned char *resp) {
   *((__vector_pair *)resp) = res;
 }
 
-// CHECK-LABEL: define dso_local void @test_aes192_genlastkey_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
+// CHECK-LABEL: @test_aes192_genlastkey_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <256 x i1> @llvm.ppc.aes.genlastkey.paired(<256 x i1> [[TMP0]], i32 1)
-// CHECK-NEXT:    store <256 x i1> [[TMP1]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP1]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes192_genlastkey_paired(unsigned char *vpp1, unsigned char *resp) {
@@ -173,12 +164,11 @@ void test_aes192_genlastkey_paired(unsigned char *vpp1, unsigned char *resp) {
   *((__vector_pair *)resp) = res;
 }
 
-// CHECK-LABEL: define dso_local void @test_aes256_genlastkey_paired(
-// CHECK-SAME: ptr noundef readonly captures(none) [[VPP1:%.*]], ptr noundef writeonly captures(none) initializes((0, 32)) [[RESP:%.*]]) local_unnamed_addr #[[ATTR0]] {
-// CHECK-NEXT:  [[ENTRY:.*:]]
-// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1]], align 32
+// CHECK-LABEL: @test_aes256_genlastkey_paired(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = load <256 x i1>, ptr [[VPP1:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    [[TMP1:%.*]] = tail call <256 x i1> @llvm.ppc.aes.genlastkey.paired(<256 x i1> [[TMP0]], i32 2)
-// CHECK-NEXT:    store <256 x i1> [[TMP1]], ptr [[RESP]], align 32
+// CHECK-NEXT:    store <256 x i1> [[TMP1]], ptr [[RESP:%.*]], align 32, !tbaa [[TBAA6]]
 // CHECK-NEXT:    ret void
 //
 void test_aes256_genlastkey_paired(unsigned char *vpp1, unsigned char *resp) {
@@ -187,6 +177,29 @@ void test_aes256_genlastkey_paired(unsigned char *vpp1, unsigned char *resp) {
   *((__vector_pair *)resp) = res;
 }
 
+// CHECK-LABEL: @test_galois_field_mult(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call <16 x i8> @llvm.ppc.galois.field.mult(<16 x i8> [[A:%.*]], <16 x i8> [[B:%.*]], i32 0)
+// CHECK-NEXT:    ret <16 x i8> [[TMP0]]
+//
+vector unsigned char test_galois_field_mult(vector unsigned char a, vector unsigned char b) {
+  return __builtin_galois_field_mult(a, b, 0);
+}
 
+// CHECK-LABEL: @test_galois_field_mult_gcm(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call <16 x i8> @llvm.ppc.galois.field.mult(<16 x i8> [[A:%.*]], <16 x i8> [[B:%.*]], i32 0)
+// CHECK-NEXT:    ret <16 x i8> [[TMP0]]
+//
+vector unsigned char test_galois_field_mult_gcm(vector unsigned char a, vector unsigned char b) {
+  return __builtin_galois_field_mult_gcm(a, b);
+}
 
-// Made with AI
+// CHECK-LABEL: @test_galois_field_mult_xts(
+// CHECK-NEXT:  entry:
+// CHECK-NEXT:    [[TMP0:%.*]] = tail call <16 x i8> @llvm.ppc.galois.field.mult(<16 x i8> [[A:%.*]], <16 x i8> [[B:%.*]], i32 1)
+// CHECK-NEXT:    ret <16 x i8> [[TMP0]]
+//
+vector unsigned char test_galois_field_mult_xts(vector unsigned char a, vector unsigned char b) {
+  return __builtin_galois_field_mult_xts(a, b);
+}

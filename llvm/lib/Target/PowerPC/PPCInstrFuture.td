@@ -476,23 +476,29 @@ let Predicates = [HasVSX, IsISAFuture] in {
                                     [(set v256i1:$XTp,
                                       (int_ppc_aes_encrypt_paired v256i1:$XAp,
                                                                    v256i1:$XBp,
-                                                                   i32:$M))]>;
+                                                                   u2imm_timm:$M))]>;
   def XXAESDECP : XX3Form_XTABp5_M2<202, (outs vsrprc:$XTp),
                                     (ins vsrprc:$XAp, vsrprc:$XBp, u2imm:$M),
                                     "xxaesdecp $XTp, $XAp, $XBp, $M",
                                     [(set v256i1:$XTp,
                                       (int_ppc_aes_decrypt_paired v256i1:$XAp,
                                                                    v256i1:$XBp,
-                                                                   i32:$M))]>;
+                                                                   u2imm_timm:$M))]>;
   def XXAESGENLKP : XX3Form_XTBp5_M2<420, (outs vsrprc:$XTp),
                                      (ins vsrprc:$XBp, u2imm:$M),
                                      "xxaesgenlkp $XTp, $XBp, $M",
                                      [(set v256i1:$XTp,
                                        (int_ppc_aes_genlastkey_paired v256i1:$XBp,
-                                                                       i32:$M))]>;
+                                                                       u2imm_timm:$M))]>;
+  // Galois Field Multiplication instruction
+  // Extended opcode is 26 (bits 24-28), with P bit at position 23
   def XXGFMUL128 : XX3Form_XTAB6_P1<26, (outs vsrc:$XT),
                                     (ins vsrc:$XA, vsrc:$XB, u1imm:$P),
-                                    "xxgfmul128 $XT, $XA, $XB, $P", []>;
+                                    "xxgfmul128 $XT, $XA, $XB, $P",
+                                    [(set v16i8:$XT,
+                                          (int_ppc_galois_field_mult v16i8:$XA,
+                                                                     v16i8:$XB,
+                                                                     u1imm_timm:$P))]>;
 
   // VSX Vector Integer Arithmetic Instructions
   def XVADDUWM : XX3Form_XTAB6<60, 131, (outs vsrc:$XT), (ins vsrc:$XA, vsrc:$XB),
@@ -646,8 +652,10 @@ let Predicates = [HasVSX, IsISAFuture] in {
                                                    vsrprc:$XBp, 1)>;
   def : InstAlias<"xxaes256genlkp $XTp, $XBp", (XXAESGENLKP vsrprc:$XTp,
                                                    vsrprc:$XBp, 2)>;
-  def : InstAlias<"xxgfmul128gcm $XT, $XA, $XB", (XXGFMUL128 vsrc:$XT, vsrc:$XA,
-                                                     vsrc:$XB, 0)>;
-  def : InstAlias<"xxgfmul128xts $XT, $XA, $XB", (XXGFMUL128 vsrc:$XT, vsrc:$XA,
-                                                     vsrc:$XB, 1)>;
+
+  // Galois Field Multiplication aliases for assembly parsing
+  def : InstAlias<"xxgfmul128gcm $XT, $XA, $XB", (XXGFMUL128 vsrc:$XT,
+                                                    vsrc:$XA, vsrc:$XB, 0)>;
+  def : InstAlias<"xxgfmul128xts $XT, $XA, $XB", (XXGFMUL128 vsrc:$XT,
+                                                    vsrc:$XA, vsrc:$XB, 1)>;
 }

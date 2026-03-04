@@ -1186,6 +1186,14 @@ CUSTOM_BUILTIN(aes192_genlastkey_paired, aes_genlastkey_paired, "W256W256", fals
 CUSTOM_BUILTIN(aes256_genlastkey_paired, aes_genlastkey_paired, "W256W256", false,
                "isa-future-instructions")
 
+// Galois Field Multiplication builtins
+UNALIASED_CUSTOM_BUILTIN(galois_field_mult, "VVVi1", false,
+                         "isa-future-instructions")
+CUSTOM_BUILTIN(galois_field_mult_gcm, galois_field_mult, "VVV", false,
+               "isa-future-instructions")
+CUSTOM_BUILTIN(galois_field_mult_xts, galois_field_mult, "VVV", false,
+               "isa-future-instructions")
+
 
 
 // FIXME: Obviously incomplete.

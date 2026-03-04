@@ -429,7 +429,7 @@ def VRRC : RegisterClass<"PPC",
 def VSLRC : RegisterClass<"PPC", [v4i32,v4f32,v2f64,v2i64], 128,
                           (add (sequence "VSL%u", 0, 13),
                                (sequence "VSL%u", 31, 14))>;
-def VSRC  : RegisterClass<"PPC", [v4i32,v4f32,v2f64,v2i64], 128,
+def VSRC  : RegisterClass<"PPC", [v16i8,v8i16,v4i32,v4f32,v2f64,v2i64], 128,
                           (add VSLRC, VRRC)>;
 
 // Register classes for the 64-bit "scalar" VSX subregisters.

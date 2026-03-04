@@ -1192,6 +1192,17 @@ Value *CodeGenFunction::EmitPPCBuiltinExpr(unsigned BuiltinID,
       return Builder.CreateCall(F, Ops, "");
     }
     SmallVector<Value*, 4> CallOps;
+    if (BuiltinID == PPC::BI__builtin_galois_field_mult ||
+        BuiltinID == PPC::BI__builtin_galois_field_mult_gcm ||
+        BuiltinID == PPC::BI__builtin_galois_field_mult_xts) {
+      if (BuiltinID == PPC::BI__builtin_galois_field_mult_gcm)
+        Ops.push_back(llvm::ConstantInt::get(Int32Ty, 0));
+      else if (BuiltinID == PPC::BI__builtin_galois_field_mult_xts)
+        Ops.push_back(llvm::ConstantInt::get(Int32Ty, 1));
+      // For base builtin, Ops already has all 3 arguments.
+      llvm::Function *F = CGM.getIntrinsic(ID);
+      return Builder.CreateCall(F, Ops, "");
+    }
     if (Accumulate) {
       Address Addr = EmitPointerWithAlignment(E->getArg(0));
       Value *Acc = Builder.CreateLoad(Addr);
