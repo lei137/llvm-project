@@ -606,8 +606,7 @@ def : Pat<(int_ppc_vsx_stxvprll v256i1:$XTp, addr:$RA, i64:$RB), (STXVPRLL $XTp,
                                                                      $RA, $RB)>;
 
 def: Pat<(v16i8 (int_ppc_galois_field_mult v16i8:$XA, v16i8:$XB, u1imm_timm:$IMM)),
-         (COPY_TO_REGCLASS (XXGFMUL128 (COPY_TO_REGCLASS $XA, VSRC),
-                                       (COPY_TO_REGCLASS $XB, VSRC), $IMM), VSRC)>;
+         (COPY_TO_REGCLASS (XXGFMUL128 RCCp.AToVSRC, RCCp.BToVSRC, $IMM), VSRC)>;
 
 // Regular load/store patterns for v256i1 (for ISA Future)
 let Predicates = [PairedVectorMemops, IsISAFuture] in {
