@@ -93,7 +93,6 @@ def VSRpRC : PPCRegisterClassWithPriority<[v256i1], 128,
                     (sequence "VSRp%u", 0, 6),
                     (sequence "VSRp%u", 15, 7)),
                2, 0, 256>;
-defm VSRpRC : PPCRegOperand<"isVSRpEvenRegNumber">;
 
 
 

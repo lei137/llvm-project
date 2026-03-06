@@ -135,11 +135,9 @@ let SubRegIndices = [sub_dmr0, sub_dmr1] in {
 
 def DMRROWRC : PPCRegisterClassWithSize<[v128i1], 128,
                  (add (sequence "DMRROW%u", 0, 63)), 128>;
-defm DMRROWRC : PPCRegOperand<"isDMRROWRegNumber", "dmrrow">;
 
 def DMRROWpRC : PPCRegisterClassWithSize<[v256i1], 128,
                   (add (sequence "DMRROWp%u", 0, 31)), 256>;
-defm DMRROWpRC : PPCRegOperand<"isDMRROWpRegNumber", "dmrrowp">;
 
 def WACCRC : PPCRegisterClassWithSize<[v512i1], 128,
                (add (sequence "WACC%u", 0, 7)), 512>;
@@ -149,8 +147,6 @@ def WACC_HIRC : PPCRegisterClassWithSize<[v512i1], 128,
 
 def DMRRC : PPCRegisterClassWithSize<[v1024i1], 128,
               (add (sequence "DMR%u", 0, 7)), 1024>;
-defm DMRRC : PPCRegOperand<"isDMRRegNumber", "dmr">;
 
 def DMRpRC : PPCRegisterClassWithSize<[v2048i1], 128,
                (add DMRp0, DMRp1, DMRp2, DMRp3), 2048>;
-defm DMRpRC : PPCRegOperand<"isDMRpRegNumber", "dmrp">;
