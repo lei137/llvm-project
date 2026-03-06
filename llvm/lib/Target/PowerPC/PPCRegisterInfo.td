@@ -170,10 +170,14 @@ let isArtificial = 1 in {
   }
 }
 
-def VFHRC : PPCNonAllocatableRegisterClassWithCopyCost<[f64], 64,
-              (sequence "VFH%u", 0, 31), -1>;
-def FHRC : PPCNonAllocatableRegisterClassWithCopyCost<[f64], 64,
-             (sequence "FH%u", 0, 31), -1>;
+def VFHRC : PPCNonAllocatableRegisterClass<[f64], 64,
+              (sequence "VFH%u", 0, 31)> {
+  let CopyCost = -1;
+}
+def FHRC : PPCNonAllocatableRegisterClass<[f64], 64,
+             (sequence "FH%u", 0, 31)> {
+  let CopyCost = -1;
+}
 
 // Floating-point pair registers
 foreach Index = { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30 } in {
@@ -467,8 +471,9 @@ def LRRC : PPCNonAllocatableRegisterClass<[i32], 32, (add LR)>;
 def LR8RC : PPCNonAllocatableRegisterClass<[i64], 64, (add LR8)>;
 
 def VRSAVERC : PPCRegisterClass<[i32], 32, (add VRSAVE)>;
-def CARRYRC : PPCNonAllocatableRegisterClassWithCopyCost<[i32], 32,
-                (add CARRY, XER), -1>;
+def CARRYRC : PPCNonAllocatableRegisterClass<[i32], 32, (add CARRY, XER)> {
+  let CopyCost = -1;
+}
 
 // Make AllocationOrder as similar as G8RC's to avoid potential spilling.
 // Similarly, we have an AltOrder for 64-bit ELF ABI which r2 is allocated

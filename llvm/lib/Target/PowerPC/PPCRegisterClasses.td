@@ -19,13 +19,6 @@
 class PPCRegisterClass<list<ValueType> regTypes, int alignment, dag regList>
   : RegisterClass<"PPC", regTypes, alignment, regList>;
 
-// Register class that is not allocatable
-class PPCNonAllocatableRegisterClass<list<ValueType> regTypes, int alignment,
-                                     dag regList>
-  : PPCRegisterClass<regTypes, alignment, regList> {
-  let isAllocatable = 0;
-}
-
 //===----------------------------------------------------------------------===//
 // Classes for Generating RegisterOperand for Existing RegisterClass
 //===----------------------------------------------------------------------===//
@@ -72,6 +65,13 @@ multiclass PPCRegOperand<string predicate, string operandName = ""> {
 // Variant Register Class Definitions
 //===----------------------------------------------------------------------===//
 
+// Register class that is not allocatable
+class PPCNonAllocatableRegisterClass<list<ValueType> regTypes, int alignment,
+                                     dag regList>
+  : PPCRegisterClass<regTypes, alignment, regList> {
+  let isAllocatable = 0;
+}
+
 // Register class with explicit size
 class PPCRegisterClassWithSize<list<ValueType> regTypes, int alignment,
                                dag regList, int size>
@@ -79,23 +79,14 @@ class PPCRegisterClassWithSize<list<ValueType> regTypes, int alignment,
   let Size = size;
 }
 
-// Register class with allocation priority
+// Register class with allocation priority and size
 class PPCRegisterClassWithPriority<list<ValueType> regTypes, int alignment,
                                    dag regList, int allocPriority,
-                                   bit globalPriority = 0, int size = 0>
+                                   bit globalPriority, int size>
   : PPCRegisterClass<regTypes, alignment, regList> {
   let AllocationPriority = allocPriority;
   let GlobalPriority = globalPriority;
   let Size = size;
-}
-
-// Non-allocatable register class with copy cost
-class PPCNonAllocatableRegisterClassWithCopyCost<list<ValueType> regTypes,
-                                                 int alignment, dag regList,
-                                                 int copyCost>
-  : PPCRegisterClass<regTypes, alignment, regList> {
-  let isAllocatable = 0;
-  let CopyCost = copyCost;
 }
 
 //===----------------------------------------------------------------------===//
