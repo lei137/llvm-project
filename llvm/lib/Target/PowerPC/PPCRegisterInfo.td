@@ -519,14 +519,8 @@ defm DMRROWpRC : PPCRegOperand<"isDMRROWpRegNumber", "dmrrowp">;
 defm DMRRC : PPCRegOperand<"isDMRRegNumber", "dmr">;
 defm DMRpRC : PPCRegOperand<"isDMRpRegNumber", "dmrp">;
 
-// Special case: spe4rc uses GPRC register class but has its own operand name
-def PPCRegSPE4RCAsmOperand : AsmOperandClass {
-  let Name = "RegSPE4RC"; let PredicateMethod = "isRegNumber";
-}
-
-def spe4rc : RegisterOperand<GPRC> {
-  let ParserMatchClass = PPCRegSPE4RCAsmOperand;
-}
+// Special case: spe4rc uses GPRC register class and its AsmOperandClass
+def spe4rc : PPCRegOperandOnly<"GPRC">;
 
 def fpimm0 : PatLeaf<(fpimm), [{ return N->isExactlyValue(+0.0); }]>;
 def fpimm0neg : PatLeaf<(fpimm), [{return N->isExactlyValue(-0.0);}]>;

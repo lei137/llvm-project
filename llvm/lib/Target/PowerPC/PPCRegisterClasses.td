@@ -27,10 +27,21 @@ class PPCNonAllocatableRegisterClass<list<ValueType> regTypes, int alignment,
 }
 
 //===----------------------------------------------------------------------===//
-// Multiclasses for Generating RegisterOperand for Existing RegisterClass
+// Classes for Generating RegisterOperand for Existing RegisterClass
 //===----------------------------------------------------------------------===//
 
-// Base multiclass that generates the AsmOperandClass and RegisterOperand for an
+// Base class that creates a RegisterOperand for an already-defined RegisterClass,
+// assuming the AsmOperandClass already exists with the standard naming convention
+// (PPCReg<regClassName>AsmOperand).
+//
+// Usage: def spe4rc : PPCRegOperandOnly<"GPRC">;
+//   Creates: spe4rc RegisterOperand wrapping GPRC, using PPCRegGPRCAsmOperand
+class PPCRegOperandOnly<string regClassName>
+  : RegisterOperand<!cast<RegisterClass>(regClassName)> {
+  let ParserMatchClass = !cast<AsmOperandClass>(!strconcat("PPCReg", regClassName, "AsmOperand"));
+}
+
+// Multiclass that generates both the AsmOperandClass and RegisterOperand for an
 // already-defined RegisterClass. This eliminates the repetitive pattern of
 // manually defining these for each register class.
 //
