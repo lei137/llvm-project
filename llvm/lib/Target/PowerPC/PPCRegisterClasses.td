@@ -19,6 +19,13 @@
 class PPCRegisterClass<list<ValueType> regTypes, int alignment, dag regList>
   : RegisterClass<"PPC", regTypes, alignment, regList>;
 
+// Register class that is not allocatable
+class PPCNonAllocatableRegisterClass<list<ValueType> regTypes, int alignment,
+                                     dag regList>
+  : PPCRegisterClass<regTypes, alignment, regList> {
+  let isAllocatable = 0;
+}
+
 //===----------------------------------------------------------------------===//
 // Multiclasses for Generating RegisterOperand for Existing RegisterClass
 //===----------------------------------------------------------------------===//
@@ -73,13 +80,6 @@ class PPCRegisterClassWithSize<list<ValueType> regTypes, int alignment,
                                dag regList, int size>
   : PPCRegisterClass<regTypes, alignment, regList> {
   let Size = size;
-}
-
-// Register class that is not allocatable
-class PPCNonAllocatableRegisterClass<list<ValueType> regTypes, int alignment,
-                                     dag regList>
-  : PPCRegisterClass<regTypes, alignment, regList> {
-  let isAllocatable = 0;
 }
 
 // Register class with custom copy cost
