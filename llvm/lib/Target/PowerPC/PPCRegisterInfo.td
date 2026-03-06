@@ -527,9 +527,6 @@ defm DMRpRC : PPCRegOperand<"isDMRpRegNumber", "dmrp">;
 // Special case: spe4rc uses GPRC register class and its AsmOperandClass
 def spe4rc : PPCRegOperandOnly<"GPRC">;
 
-def fpimm0 : PatLeaf<(fpimm), [{ return N->isExactlyValue(+0.0); }]>;
-def fpimm0neg : PatLeaf<(fpimm), [{return N->isExactlyValue(-0.0);}]>;
-
 def PPCDirectBrAsmOperand : AsmOperandClass {
   let Name = "DirectBr"; let PredicateMethod = "isDirectBr";
   let RenderMethod = "addBranchTargetOperands";
