@@ -19,6 +19,55 @@
 class PPCRegisterClass<list<ValueType> regTypes, int alignment, dag regList>
   : RegisterClass<"PPC", regTypes, alignment, regList>;
 
+//===----------------------------------------------------------------------===//
+// Multiclasses for Generating RegisterOperand for Existing RegisterClass
+//===----------------------------------------------------------------------===//
+
+// Base multiclass that generates the AsmOperandClass and RegisterOperand for an
+// already-defined RegisterClass. This eliminates the repetitive pattern of
+// manually defining these for each register class.
+//
+// Usage examples:
+//   defm GPRC : PPCRegOperand<"isRegNumber">;
+//     Creates: PPCRegGPRCAsmOperand and gprc (lowercase of GPRC)
+//   defm FpRC : PPCRegOperand<"isEvenRegNumber", "fpairrc">;
+//     Creates: PPCRegFpRCAsmOperand and fpairrc (custom name)
+//
+// The NAME in the defm statement should match the RegisterClass name.
+
+multiclass PPCRegOperand<string predicate, string operandName = ""> {
+  // Define the AsmOperandClass
+  def "PPCReg"#NAME#"AsmOperand" : AsmOperandClass {
+    let Name = "Reg"#NAME;
+    let PredicateMethod = predicate;
+  }
+  
+  // Define the RegisterOperand
+  // Use custom name if provided, otherwise use lowercase of NAME
+  def !if(!eq(operandName, ""), !tolower(NAME), operandName)
+    : RegisterOperand<!cast<RegisterClass>(NAME)> {
+    let ParserMatchClass = !cast<AsmOperandClass>("PPCReg"#NAME#"AsmOperand");
+  }
+}
+
+//===----------------------------------------------------------------------===//
+// Wrapper Multiclasses that Define RegisterClass + RegisterOperand Together
+//===----------------------------------------------------------------------===//
+
+// These multiclasses allow defining both a RegisterClass and its RegisterOperand
+// in a single statement, eliminating the need for separate def + defm.
+//
+// Usage:
+//   defm GPRC : PPCRegClassAndOperand<[i32,f32], 32, (add R0, R1, ...), "isRegNumber">;
+// This creates both GPRC (RegisterClass) and gprc (RegisterOperand)
+
+multiclass PPCRegClassAndOperand<list<ValueType> regTypes, int alignment,
+                                  dag regList, string predicate,
+                                  string operandName = ""> {
+  def NAME : PPCRegisterClass<regTypes, alignment, regList>;
+  defm NAME : PPCRegOperand<predicate, operandName>;
+}
+
 // Register class with explicit size
 class PPCRegisterClassWithSize<list<ValueType> regTypes, int alignment,
                                dag regList, int size>
@@ -50,15 +99,6 @@ class PPCRegisterClassWithPriority<list<ValueType> regTypes, int alignment,
   let Size = size;
 }
 
-// Register class with alternative allocation orders
-class PPCRegisterClassWithAltOrders<list<ValueType> regTypes, int alignment,
-                                    dag regList, list<dag> altOrders,
-                                    code altOrderSelect>
-  : PPCRegisterClass<regTypes, alignment, regList> {
-  let AltOrders = altOrders;
-  let AltOrderSelect = altOrderSelect;
-}
-
 // Register class with alternative orders and size
 class PPCRegisterClassWithAltOrdersAndSize<list<ValueType> regTypes, int alignment,
                                            dag regList, list<dag> altOrders,
@@ -83,30 +123,15 @@ class PPCNonAllocatableRegisterClassWithCopyCost<list<ValueType> regTypes,
 //===----------------------------------------------------------------------===//
 
 // GPR-style register class with alternative orders for different ABIs
+// Merged PPCRegisterClassWithAltOrders into this class since it was only used here
 class PPCGPRRegisterClass<list<ValueType> regTypes, int alignment, dag regList,
                           dag altOrder1, dag altOrder2>
-  : PPCRegisterClassWithAltOrders<regTypes, alignment, regList,
-      [altOrder1, altOrder2],
-      [{
-        return MF.getSubtarget<PPCSubtarget>().getGPRAllocationOrderIdx();
-      }]>;
-
-// Vector/VSX register class with size
-class PPCVectorRegisterClass<list<ValueType> regTypes, int alignment,
-                             dag regList, int size>
-  : PPCRegisterClassWithSize<regTypes, alignment, regList, size>;
-
-// Accumulator register class with high allocation priority
-class PPCAccumulatorRegisterClass<list<ValueType> regTypes, int alignment,
-                                  dag regList, int allocPriority,
-                                  bit globalPriority, int size>
-  : PPCRegisterClassWithPriority<regTypes, alignment, regList,
-                                 allocPriority, globalPriority, size>;
-
-// DMR-style register class with size
-class PPCDMRRegisterClass<list<ValueType> regTypes, int alignment,
-                          dag regList, int size>
-  : PPCRegisterClassWithSize<regTypes, alignment, regList, size>;
+  : PPCRegisterClass<regTypes, alignment, regList> {
+  let AltOrders = [altOrder1, altOrder2];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().getGPRAllocationOrderIdx();
+  }];
+}
 
 // Condition register class with alternative orders for ELFv2 ABI
 class PPCCRRegisterClass<list<ValueType> regTypes, int alignment, dag regList,
@@ -120,10 +145,6 @@ class PPCCRRegisterClass<list<ValueType> regTypes, int alignment, dag regList,
   let Size = !if(!ne(size, 0), size, 0);
 }
 
-// Special purpose register class (non-allocatable)
-class PPCSPRegisterClass<list<ValueType> regTypes, int alignment, dag regList>
-  : PPCNonAllocatableRegisterClass<regTypes, alignment, regList>;
-
 // Paired register class with alternative orders for 64-bit ELF ABI
 class PPCPairedRegisterClass<list<ValueType> regTypes, int alignment,
                              dag regList, dag altOrder, int size>
@@ -133,4 +154,40 @@ class PPCPairedRegisterClass<list<ValueType> regTypes, int alignment,
     return MF.getSubtarget<PPCSubtarget>().is64BitELFABI();
   }];
   let Size = size;
+}
+
+//===----------------------------------------------------------------------===//
+// Multiclasses that Combine Specialized Base Classes with RegisterOperand
+//===----------------------------------------------------------------------===//
+
+// These multiclasses use the specialized base classes defined above to create
+// both a RegisterClass and its RegisterOperand in a single statement.
+
+// GPR register class with alternative orders + RegisterOperand
+multiclass PPCGPRRegClassAndOperand<list<ValueType> regTypes, int alignment,
+                                     dag regList, dag altOrder1, dag altOrder2,
+                                     string predicate, string operandName = ""> {
+  def NAME : PPCGPRRegisterClass<regTypes, alignment, regList, altOrder1, altOrder2>;
+  defm NAME : PPCRegOperand<predicate, operandName>;
+}
+
+// Register class with explicit size + RegisterOperand
+// Consolidates: PPCVectorRegisterClass, PPCRegisterClassWithSize, and PPCDMRRegisterClass
+// All three just add a Size parameter to the base RegisterClass
+multiclass PPCRegClassWithSizeAndOperand<list<ValueType> regTypes, int alignment,
+                                          dag regList, int size, string predicate,
+                                          string operandName = ""> {
+  def NAME : PPCRegisterClassWithSize<regTypes, alignment, regList, size>;
+  defm NAME : PPCRegOperand<predicate, operandName>;
+}
+
+// Register class with priority + RegisterOperand
+// Used for both accumulator and general priority-based register classes
+multiclass PPCRegClassWithPriorityAndOperand<list<ValueType> regTypes, int alignment,
+                                              dag regList, int allocPriority,
+                                              bit globalPriority, int size,
+                                              string predicate, string operandName = ""> {
+  def NAME : PPCRegisterClassWithPriority<regTypes, alignment, regList,
+                                           allocPriority, globalPriority, size>;
+  defm NAME : PPCRegOperand<predicate, operandName>;
 }
