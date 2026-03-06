@@ -69,35 +69,14 @@ multiclass PPCRegOperand<string predicate, string operandName = ""> {
 }
 
 //===----------------------------------------------------------------------===//
-// Wrapper Multiclasses that Define RegisterClass + RegisterOperand Together
+// Variant Register Class Definitions
 //===----------------------------------------------------------------------===//
-
-// These multiclasses allow defining both a RegisterClass and its RegisterOperand
-// in a single statement, eliminating the need for separate def + defm.
-//
-// Usage:
-//   defm GPRC : PPCRegClassAndOperand<[i32,f32], 32, (add R0, R1, ...), "isRegNumber">;
-// This creates both GPRC (RegisterClass) and gprc (RegisterOperand)
-
-multiclass PPCRegClassAndOperand<list<ValueType> regTypes, int alignment,
-                                  dag regList, string predicate,
-                                  string operandName = ""> {
-  def NAME : PPCRegisterClass<regTypes, alignment, regList>;
-  defm NAME : PPCRegOperand<predicate, operandName>;
-}
 
 // Register class with explicit size
 class PPCRegisterClassWithSize<list<ValueType> regTypes, int alignment,
                                dag regList, int size>
   : PPCRegisterClass<regTypes, alignment, regList> {
   let Size = size;
-}
-
-// Register class with custom copy cost
-class PPCRegisterClassWithCopyCost<list<ValueType> regTypes, int alignment,
-                                   dag regList, int copyCost>
-  : PPCRegisterClass<regTypes, alignment, regList> {
-  let CopyCost = copyCost;
 }
 
 // Register class with allocation priority
@@ -107,16 +86,6 @@ class PPCRegisterClassWithPriority<list<ValueType> regTypes, int alignment,
   : PPCRegisterClass<regTypes, alignment, regList> {
   let AllocationPriority = allocPriority;
   let GlobalPriority = globalPriority;
-  let Size = size;
-}
-
-// Register class with alternative orders and size
-class PPCRegisterClassWithAltOrdersAndSize<list<ValueType> regTypes, int alignment,
-                                           dag regList, list<dag> altOrders,
-                                           code altOrderSelect, int size>
-  : PPCRegisterClass<regTypes, alignment, regList> {
-  let AltOrders = altOrders;
-  let AltOrderSelect = altOrderSelect;
   let Size = size;
 }
 
@@ -167,38 +136,3 @@ class PPCPairedRegisterClass<list<ValueType> regTypes, int alignment,
   let Size = size;
 }
 
-//===----------------------------------------------------------------------===//
-// Multiclasses that Combine Specialized Base Classes with RegisterOperand
-//===----------------------------------------------------------------------===//
-
-// These multiclasses use the specialized base classes defined above to create
-// both a RegisterClass and its RegisterOperand in a single statement.
-
-// GPR register class with alternative orders + RegisterOperand
-multiclass PPCGPRRegClassAndOperand<list<ValueType> regTypes, int alignment,
-                                     dag regList, dag altOrder1, dag altOrder2,
-                                     string predicate, string operandName = ""> {
-  def NAME : PPCGPRRegisterClass<regTypes, alignment, regList, altOrder1, altOrder2>;
-  defm NAME : PPCRegOperand<predicate, operandName>;
-}
-
-// Register class with explicit size + RegisterOperand
-// Consolidates: PPCVectorRegisterClass, PPCRegisterClassWithSize, and PPCDMRRegisterClass
-// All three just add a Size parameter to the base RegisterClass
-multiclass PPCRegClassWithSizeAndOperand<list<ValueType> regTypes, int alignment,
-                                          dag regList, int size, string predicate,
-                                          string operandName = ""> {
-  def NAME : PPCRegisterClassWithSize<regTypes, alignment, regList, size>;
-  defm NAME : PPCRegOperand<predicate, operandName>;
-}
-
-// Register class with priority + RegisterOperand
-// Used for both accumulator and general priority-based register classes
-multiclass PPCRegClassWithPriorityAndOperand<list<ValueType> regTypes, int alignment,
-                                              dag regList, int allocPriority,
-                                              bit globalPriority, int size,
-                                              string predicate, string operandName = ""> {
-  def NAME : PPCRegisterClassWithPriority<regTypes, alignment, regList,
-                                           allocPriority, globalPriority, size>;
-  defm NAME : PPCRegOperand<predicate, operandName>;
-}
