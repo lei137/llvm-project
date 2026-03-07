@@ -380,10 +380,10 @@ def G8RC_NOX0 : PPCGPRRegisterClass<[i64], 64,
                   (add (sequence "X%u", 2, 12),
                        (sequence "X%u", 31, 13), X1, FP8, BP8, ZERO8)>;
 
-def SPERC : PPCRegisterClass<[f64], 64,
-              (add (sequence "S%u", 2, 12),
-                   (sequence "S%u", 30, 13),
-                   S31, S0, S1)>;
+defm SPERC : PPCRegister<[f64], 64,
+               (add (sequence "S%u", 2, 12),
+                    (sequence "S%u", 30, 13),
+                    S31, S0, S1), "isRegNumber">;
 
 // Allocate volatiles first, then non-volatiles in reverse order. With the SVR4
 // ABI the size of the Floating-point register save area is determined by the
@@ -392,11 +392,11 @@ def SPERC : PPCRegisterClass<[f64], 64,
 // previous stack frame. By allocating non-volatiles in reverse order we make
 // sure that the Floating-point register save area is always as small as
 // possible because there aren't any unused spill slots.
-def F8RC : PPCRegisterClass<[f64], 64,
-             (add (sequence "F%u", 0, 13),
-                  (sequence "F%u", 31, 14))>;
+defm F8RC : PPCRegister<[f64], 64,
+              (add (sequence "F%u", 0, 13),
+                   (sequence "F%u", 31, 14)), "isRegNumber">;
 
-def F4RC : PPCRegisterClass<[f32], 32, (add F8RC)>;
+defm F4RC : PPCRegister<[f32], 32, (add F8RC), "isRegNumber">;
 
 // Floating point pair registers.
 // Note that the type used for this register class is ppcf128. This is not
@@ -405,44 +405,47 @@ def F4RC : PPCRegisterClass<[f32], 32, (add F8RC)>;
 // scheduling any of these instructions it should be safe to do this.
 // The reason we didn't use the correct type (Decimal Floating Point) is that
 // at the time of this implementation the correct type was not available.
-def FpRC : PPCRegisterClassWithSize<[ppcf128], 128,
-             (add Fpair0, Fpair2, Fpair4, Fpair6, Fpair8, Fpair10, Fpair12,
-                  Fpair14, Fpair16, Fpair18, Fpair20, Fpair22, Fpair24,
-                  Fpair26, Fpair28, Fpair30), 128>;
-
-def VRRC : PPCRegisterClassWithSize<[v16i8,v8i16,v4i32,v2i64,v1i128,v4f32,v2f64, f128],
-             128,
-             (add V2, V3, V4, V5, V0, V1, V6, V7, V8, V9, V10, V11,
-                  V12, V13, V14, V15, V16, V17, V18, V19, V31, V30,
-                  V29, V28, V27, V26, V25, V24, V23, V22, V21, V20), 128>;
+defm FpRC : PPCRegisterWithSize<[ppcf128], 128,
+              (add Fpair0, Fpair2, Fpair4, Fpair6, Fpair8, Fpair10, Fpair12,
+                   Fpair14, Fpair16, Fpair18, Fpair20, Fpair22, Fpair24,
+                   Fpair26, Fpair28, Fpair30),
+                   "isEvenRegNumber", 128, "fpairrc">;
+ 
+ defm VRRC : PPCRegisterWithSize<[v16i8,v8i16,v4i32,v2i64,v1i128,v4f32,
+                                  v2f64, f128],
+              128,
+              (add V2, V3, V4, V5, V0, V1, V6, V7, V8, V9, V10, V11,
+                   V12, V13, V14, V15, V16, V17, V18, V19, V31, V30,
+                   V29, V28, V27, V26, V25, V24, V23, V22, V21, V20),
+                   "isRegNumber", 128>;
 
 // VSX register classes (the allocation order mirrors that of the corresponding
 // subregister classes).
-def VSLRC : PPCRegisterClassWithSize<[v4i32,v4f32,v2f64,v2i64], 128,
-              (add (sequence "VSL%u", 0, 13),
-                   (sequence "VSL%u", 31, 14)), 128>;
+defm VSLRC : PPCRegisterWithSize<[v4i32,v4f32,v2f64,v2i64], 128,
+               (add (sequence "VSL%u", 0, 13),
+                    (sequence "VSL%u", 31, 14)), "isRegNumber", 128>;
 
-def VSRC  : PPCRegisterClassWithSize<[v4i32,v4f32,v2f64,v2i64], 128,
-              (add VSLRC, VRRC), 128>;
+defm VSRC : PPCRegisterWithSize<[v4i32,v4f32,v2f64,v2i64], 128,
+              (add VSLRC, VRRC), "isVSRegNumber", 128>;
 
 // Register classes for the 64-bit "scalar" VSX subregisters.
-def VFRC :  PPCRegisterClass<[f64], 64,
+defm VFRC : PPCRegister<[f64], 64,
               (add VF2, VF3, VF4, VF5, VF0, VF1, VF6, VF7,
                    VF8, VF9, VF10, VF11, VF12, VF13, VF14,
                    VF15, VF16, VF17, VF18, VF19, VF31, VF30,
                    VF29, VF28, VF27, VF26, VF25, VF24, VF23,
-                   VF22, VF21, VF20)>;
+                   VF22, VF21, VF20), "isRegNumber">;
 
-def VSFRC : PPCRegisterClass<[f64], 64, (add F8RC, VFRC)>;
+defm VSFRC : PPCRegister<[f64], 64, (add F8RC, VFRC), "isVSRegNumber">;
 
 // Allow spilling GPR's into caller-saved VSR's.
-def SPILLTOVSRRC : PPCRegisterClass<[i64, f64], 64,
-                     (add G8RC, (sub VSFRC,
-                          (sequence "VF%u", 31, 20),
-                          (sequence "F%u", 31, 14)))>;
+defm SPILLTOVSRRC : PPCRegister<[i64, f64], 64,
+                      (add G8RC, (sub VSFRC,
+                           (sequence "VF%u", 31, 20),
+                           (sequence "F%u", 31, 14))), "isVSRegNumber">;
 
 // Register class for single precision scalars in VSX registers
-def VSSRC : PPCRegisterClass<[f32], 32, (add VSFRC)>;
+defm VSSRC : PPCRegister<[f32], 32, (add VSFRC), "isVSRegNumber">;
 
 def CRBITRC : PPCCRRegisterClass<[i1], 32,
   (add CR2LT, CR2GT, CR2EQ, CR2UN,
@@ -470,7 +473,7 @@ def CTRRC8 : PPCNonAllocatableRegisterClass<[i64], 64, (add CTR8)>;
 def LRRC : PPCNonAllocatableRegisterClass<[i32], 32, (add LR)>;
 def LR8RC : PPCNonAllocatableRegisterClass<[i64], 64, (add LR8)>;
 
-def VRSAVERC : PPCRegisterClass<[i32], 32, (add VRSAVE)>;
+defm VRSAVERC : PPCRegister<[i32], 32, (add VRSAVE), "isRegNumber">;
 def CARRYRC : PPCNonAllocatableRegisterClass<[i32], 32, (add CARRY, XER)> {
   let CopyCost = -1;
 }
@@ -502,16 +505,6 @@ defm GPRC : PPCRegOperand<"isRegNumber">;
 defm G8RC : PPCRegOperand<"isRegNumber">;
 defm GPRC_NOR0 : PPCRegOperand<"isRegNumber">;
 defm G8RC_NOX0 : PPCRegOperand<"isRegNumber">;
-defm SPERC : PPCRegOperand<"isRegNumber">;
-defm F8RC : PPCRegOperand<"isRegNumber">;
-defm F4RC : PPCRegOperand<"isRegNumber">;
-defm FpRC : PPCRegOperand<"isEvenRegNumber", "fpairrc">;
-defm VRRC : PPCRegOperand<"isRegNumber">;
-defm VSRC : PPCRegOperand<"isVSRegNumber">;
-defm VFRC : PPCRegOperand<"isRegNumber">;
-defm VSFRC : PPCRegOperand<"isVSRegNumber">;
-defm SPILLTOVSRRC : PPCRegOperand<"isVSRegNumber">;
-defm VSSRC : PPCRegOperand<"isVSRegNumber">;
 defm CRBITRC : PPCRegOperand<"isCRBitNumber">;
 defm CRRC : PPCRegOperand<"isCCRegNumber">;
 defm G8pRC : PPCRegOperand<"isEvenRegNumber">;

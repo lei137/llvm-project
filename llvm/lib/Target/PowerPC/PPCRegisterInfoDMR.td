@@ -118,7 +118,10 @@ let SubRegIndices = [sub_dmrrowp0, sub_dmrrowp1] in {
 // etc...
 let SubRegIndices = [sub_wacc_lo, sub_wacc_hi] in {
   foreach Index = 0-7 in {
-    def DMR#Index : DMR<Index, "dmr"#Index, [!cast<WACC>("WACC"#Index), !cast<WACC_HI>("WACC_HI"#Index)]>, DwarfRegNum<[-1, -1]>;
+    def DMR#Index : DMR<Index, "dmr"#Index,
+                        [!cast<WACC>("WACC"#Index),
+                         !cast<WACC_HI>("WACC_HI"#Index)]>,
+                    DwarfRegNum<[-1, -1]>;
   }
 }
 
@@ -133,35 +136,32 @@ let SubRegIndices = [sub_dmr0, sub_dmr1] in {
   def DMRp3 : DMRp<3, "dmrp3", [DMR6, DMR7]>, DwarfRegNum<[-1, -1]>;
 }
 
-def DMRROWRC : PPCRegisterClassWithSize<[v128i1], 128,
-                 (add (sequence "DMRROW%u", 0, 63)), 128>;
+defm DMRROWRC : PPCRegisterWithSize<[v128i1], 128,
+                  (add (sequence "DMRROW%u", 0, 63)),
+                  "isDMRROWRegNumber", 128, "dmrrow">;
 
-def DMRROWpRC : PPCRegisterClassWithSize<[v256i1], 128,
-                  (add (sequence "DMRROWp%u", 0, 31)), 256>;
+defm DMRROWpRC : PPCRegisterWithSize<[v256i1], 128,
+                   (add (sequence "DMRROWp%u", 0, 31)),
+                   "isDMRROWpRegNumber", 256, "dmrrowp">;
 
+// WACCRC and WACC_HIRC: Define only the RegisterClass, not the operands.
+// They share the AsmOperandClass with ACCRC.
 def WACCRC : PPCRegisterClassWithSize<[v512i1], 128,
                (add (sequence "WACC%u", 0, 7)), 512>;
-
-def WACC_HIRC : PPCRegisterClassWithSize<[v512i1], 128,
-                  (add (sequence "WACC_HI%u", 0, 7)), 512>;
-
-def DMRRC : PPCRegisterClassWithSize<[v1024i1], 128,
-              (add (sequence "DMR%u", 0, 7)), 1024>;
-
-def DMRpRC : PPCRegisterClassWithSize<[v2048i1], 128,
-               (add DMRp0, DMRp1, DMRp2, DMRp3), 2048>;
-
-// Register Operand Definitions.
-
-defm DMRROWRC : PPCRegOperand<"isDMRROWRegNumber", "dmrrow">;
-defm DMRROWpRC : PPCRegOperand<"isDMRROWpRegNumber", "dmrrowp">;
-defm DMRRC : PPCRegOperand<"isDMRRegNumber", "dmr">;
-defm DMRpRC : PPCRegOperand<"isDMRpRegNumber", "dmrp">;               
-
-// ACC Register Operands share the same AsmOperandClass.
 def wacc : RegisterOperand<WACCRC> {
   let ParserMatchClass = PPCRegACCRCAsmOperand;
 }
+
+def WACC_HIRC : PPCRegisterClassWithSize<[v512i1], 128,
+                  (add (sequence "WACC_HI%u", 0, 7)), 512>;
 def wacc_hi : RegisterOperand<WACC_HIRC> {
   let ParserMatchClass = PPCRegACCRCAsmOperand;
 }
+
+defm DMRRC : PPCRegisterWithSize<[v1024i1], 128,
+               (add (sequence "DMR%u", 0, 7)),
+               "isDMRRegNumber", 1024, "dmr">;
+
+defm DMRpRC : PPCRegisterWithSize<[v2048i1], 128,
+                (add DMRp0, DMRp1, DMRp2, DMRp3),
+                "isDMRpRegNumber", 2048, "dmrp">;
