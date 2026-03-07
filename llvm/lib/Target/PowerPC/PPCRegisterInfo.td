@@ -527,6 +527,64 @@ defm DMRpRC : PPCRegOperand<"isDMRpRegNumber", "dmrp">;
 // Special case: spe4rc uses GPRC register class and its AsmOperandClass
 def spe4rc : PPCRegOperandOnly<"GPRC">;
 
+// ACC Register Operands - multiple operands share the same AsmOperandClass
+defm ACCRC : PPCRegOperand<"isACCRegNumber", "acc">;
+def uacc : RegisterOperand<UACCRC> {
+  let ParserMatchClass = PPCRegACCRCAsmOperand;
+}
+def wacc : RegisterOperand<WACCRC> {
+  let ParserMatchClass = PPCRegACCRCAsmOperand;
+}
+def wacc_hi : RegisterOperand<WACC_HIRC> {
+  let ParserMatchClass = PPCRegACCRCAsmOperand;
+}
+
+// Address operands
+// A version of ptr_rc which excludes R0 (or X0 in 64-bit mode).
+def PPCRegGxRCNoR0Operand : AsmOperandClass {
+  let Name = "RegGxRCNoR0"; let PredicateMethod = "isRegNumber";
+}
+
+def ppc_ptr_rc : RegClassByHwMode<
+  [PPC32, PPC64],
+  [GPRC, G8RC]>;
+
+def ptr_rc_nor0_by_hwmode : RegClassByHwMode<
+  [PPC32, PPC64],
+  [GPRC_NOR0, G8RC_NOX0]>;
+
+def ptr_rc_nor0 : RegisterOperand<ptr_rc_nor0_by_hwmode> {
+  let ParserMatchClass = PPCRegGxRCNoR0Operand;
+}
+
+// VSRpRC with encoder/decoder methods (uses VSRpRC class but different operand name)
+def PPCRegVSRpEvenRCAsmOperand : AsmOperandClass {
+  let Name = "RegVSRpEvenRC"; let PredicateMethod = "isVSRpEvenRegNumber";
+}
+
+def vsrpevenrc : RegisterOperand<VSRpRC> {
+  let ParserMatchClass = PPCRegVSRpEvenRCAsmOperand;
+  let EncoderMethod = "getVSRpEvenEncoding";
+  let DecoderMethod = "decodeVSRpEvenOperands";
+}
+
+// A version of ptr_rc usable with the asm parser.
+def PPCRegGxRCOperand : AsmOperandClass {
+  let Name = "RegGxRC"; let PredicateMethod = "isRegNumber";
+}
+
+def ptr_rc_idx_by_hwmode : RegClassByHwMode<[PPC32, PPC64],
+                                            [GPRC, G8RC]>;
+
+def ptr_rc_idx : RegisterOperand<ptr_rc_idx_by_hwmode> {
+  let ParserMatchClass = PPCRegGxRCOperand;
+}
+
+// These are branch target operands and CR bit mask operands - they're
+// Operand<> types, not RegisterOperand<>. These define how branch
+// targets and condition register bit masks are encoded/decoded/printed.
+// They belong in an instruction-related file, not a register file.
+
 def PPCDirectBrAsmOperand : AsmOperandClass {
   let Name = "DirectBr"; let PredicateMethod = "isDirectBr";
   let RenderMethod = "addBranchTargetOperands";
@@ -583,24 +641,6 @@ def crbitm: Operand<i8> {
   let DecoderMethod = "decodeCRBitMOperand";
   let ParserMatchClass = PPCCRBitMaskOperand;
 }
-// Address operands
-// A version of ptr_rc which excludes R0 (or X0 in 64-bit mode).
-def PPCRegGxRCNoR0Operand : AsmOperandClass {
-  let Name = "RegGxRCNoR0"; let PredicateMethod = "isRegNumber";
-}
-
-def ppc_ptr_rc : RegClassByHwMode<
-  [PPC32, PPC64],
-  [GPRC, G8RC]>;
-
-def ptr_rc_nor0_by_hwmode : RegClassByHwMode<
-  [PPC32, PPC64],
-  [GPRC_NOR0, G8RC_NOX0]>;
-
-def ptr_rc_nor0 : RegisterOperand<ptr_rc_nor0_by_hwmode> {
-  let ParserMatchClass = PPCRegGxRCNoR0Operand;
-}
-
 // New addressing modes with 34 bit immediates.
 def PPCDispRI34Operand : AsmOperandClass {
   let Name = "DispRI34"; let PredicateMethod = "isS34Imm";
@@ -625,18 +665,6 @@ def memri34 : Operand<iPTR> { // memri, imm is a 34-bit value.
 def memri34_pcrel : Operand<iPTR> { // memri, imm is a 34-bit value.
   let PrintMethod = "printMemRegImm34PCRel";
   let MIOperandInfo = (ops dispRI34_pcrel:$imm, immZero:$reg);
-}
-
-// A version of ptr_rc usable with the asm parser.
-def PPCRegGxRCOperand : AsmOperandClass {
-  let Name = "RegGxRC"; let PredicateMethod = "isRegNumber";
-}
-
-def ptr_rc_idx_by_hwmode : RegClassByHwMode<[PPC32, PPC64],
-                                            [GPRC, G8RC]>;
-
-def ptr_rc_idx : RegisterOperand<ptr_rc_idx_by_hwmode> {
-  let ParserMatchClass = PPCRegGxRCOperand;
 }
 
 def PPCDispRIOperand : AsmOperandClass {
@@ -771,36 +799,4 @@ def tlscall32 : Operand<i32> {
 def pred : Operand<OtherVT> {
   let PrintMethod = "printPredicateOperand";
   let MIOperandInfo = (ops i32imm:$bibo, crrc:$reg);
-}
-
-// VSRpRC with encoder/decoder methods (uses VSRpRC class but different operand name)
-def PPCRegVSRpEvenRCAsmOperand : AsmOperandClass {
-  let Name = "RegVSRpEvenRC"; let PredicateMethod = "isVSRpEvenRegNumber";
-}
-
-def vsrpevenrc : RegisterOperand<VSRpRC> {
-  let ParserMatchClass = PPCRegVSRpEvenRCAsmOperand;
-  let EncoderMethod = "getVSRpEvenEncoding";
-  let DecoderMethod = "decodeVSRpEvenOperands";
-}
-
-// ACC Register Operands - multiple operands share the same AsmOperandClass
-def PPCRegACCRCAsmOperand : AsmOperandClass {
-  let Name = "RegACCRC"; let PredicateMethod = "isACCRegNumber";
-}
-
-def acc : RegisterOperand<ACCRC> {
-  let ParserMatchClass = PPCRegACCRCAsmOperand;
-}
-
-def uacc : RegisterOperand<UACCRC> {
-  let ParserMatchClass = PPCRegACCRCAsmOperand;
-}
-
-def wacc : RegisterOperand<WACCRC> {
-  let ParserMatchClass = PPCRegACCRCAsmOperand;
-}
-
-def wacc_hi : RegisterOperand<WACC_HIRC> {
-  let ParserMatchClass = PPCRegACCRCAsmOperand;
 }
