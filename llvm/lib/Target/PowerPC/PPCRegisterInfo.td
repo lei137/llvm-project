@@ -342,12 +342,13 @@ def GPRC : PPCGPRRegisterClass<[i32,f32], 32,
              (add (sequence "R%u", 2, 12),
                   (sequence "R%u", 30, 13),
                   R31, R0, R1, FP, BP),
-             // On non-Darwin PPC64 systems, R2 can be allocated, but must be restored, so
-             // put it at the end of the list.
+             // On non-Darwin PPC64 systems, R2 can be allocated,
+             // but must be restored, so put it at the end of the list.
              (add (sub GPRC, R2), R2),
              // On AIX, CSRs are allocated starting from R31 according to:
-             // https://www.ibm.com/docs/en/ssw_aix_72/assembler/assembler_pdf.pdf.
-             // This also helps setting the correct `NumOfGPRsSaved' in traceback table.
+             // https://www.ibm.com/docs/en/ssw_aix_72/assembler/assembler_pdf.pdf
+             // This also helps setting the correct `NumOfGPRsSaved' in
+             // traceback table.
              (add (sequence "R%u", 2, 12),
                   (sequence "R%u", 31, 13), R0, R1, FP, BP)>;
 
@@ -355,8 +356,8 @@ def G8RC : PPCGPRRegisterClass<[i64], 64,
              (add (sequence "X%u", 2, 12),
                   (sequence "X%u", 30, 14),
                   X31, X13, X0, X1, FP8, BP8),
-             // On non-Darwin PPC64 systems, R2 can be allocated, but must be restored, so
-             // put it at the end of the list.
+             // On non-Darwin PPC64 systems, R2 can be allocated,
+             // but must be restored, so put it at the end of the list.
              (add (sub G8RC, X2), X2),
              (add (sequence "X%u", 2, 12),
                   (sequence "X%u", 31, 13), X0, X1, FP8, BP8)>;
@@ -366,16 +367,16 @@ def G8RC : PPCGPRRegisterClass<[i64], 64,
 // prevent r0 from being allocated for use by those instructions.
 def GPRC_NOR0 : PPCGPRRegisterClass<[i32,f32], 32,
                   (add (sub GPRC, R0), ZERO),
-                  // On non-Darwin PPC64 systems, R2 can be allocated, but must be restored, so
-                  // put it at the end of the list.
+                  // On non-Darwin PPC64 systems, R2 can be allocated,
+                  // but must be restored, so put it at the end of the list.
                   (add (sub GPRC_NOR0, R2), R2),
                   (add (sequence "R%u", 2, 12),
                        (sequence "R%u", 31, 13), R1, FP, BP, ZERO)>;
 
 def G8RC_NOX0 : PPCGPRRegisterClass<[i64], 64,
                   (add (sub G8RC, X0), ZERO8),
-                  // On non-Darwin PPC64 systems, R2 can be allocated, but must be restored, so
-                  // put it at the end of the list.
+                  // On non-Darwin PPC64 systems, R2 can be allocated,
+                  // but must be restored, so put it at the end of the list.
                   (add (sub G8RC_NOX0, X2), X2),
                   (add (sequence "X%u", 2, 12),
                        (sequence "X%u", 31, 13), X1, FP8, BP8, ZERO8)>;
