@@ -488,11 +488,15 @@ def CARRYRC : PPCNonAllocatableRegisterClass<[i32], 32, (add CARRY, XER)> {
 // Make AllocationOrder as similar as G8RC's to avoid potential spilling.
 // Similarly, we have an AltOrder for 64-bit ELF ABI which r2 is allocated
 // at last.
-def G8pRC : PPCPairedRegisterClass<[untyped], 128,
+def G8pRC : PPCRegisterClassWithSize<[untyped], 128,
               (add (sequence "G8p%u", 1, 5),
                    (sequence "G8p%u", 14, 7),
-                   G8p15, G8p6, G8p0),
-              (add (sub G8pRC, G8p1), G8p1), 128>;
+                   G8p15, G8p6, G8p0), 128> {
+  let AltOrders = [(add (sub G8pRC, G8p1), G8p1)];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().is64BitELFABI();
+  }];
+}
 
 //===----------------------------------------------------------------------===//
 // PowerPC Operand Definitions.

@@ -104,14 +104,3 @@ class PPCGPRRegisterClass<list<ValueType> regTypes, int alignment, dag regList,
   }];
 }
 
-// Paired register class with alternative orders for 64-bit ELF ABI
-class PPCPairedRegisterClass<list<ValueType> regTypes, int alignment,
-                             dag regList, dag altOrder, int size>
-  : PPCRegisterClass<regTypes, alignment, regList> {
-  let AltOrders = [altOrder];
-  let AltOrderSelect = [{
-    return MF.getSubtarget<PPCSubtarget>().is64BitELFABI();
-  }];
-  let Size = size;
-}
-
