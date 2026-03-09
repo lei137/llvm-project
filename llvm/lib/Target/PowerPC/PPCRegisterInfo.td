@@ -444,7 +444,7 @@ def SPILLTOVSRRC : PPCRegisterClass<[i64, f64], 64,
 // Register class for single precision scalars in VSX registers
 def VSSRC : PPCRegisterClass<[f32], 32, (add VSFRC)>;
 
-def CRBITRC : PPCCRRegisterClass<[i1], 32,
+def CRBITRC : PPCRegisterClassWithSize<[i1], 32,
   (add CR2LT, CR2GT, CR2EQ, CR2UN,
        CR3LT, CR3GT, CR3EQ, CR3UN,
        CR4LT, CR4GT, CR4EQ, CR4UN,
@@ -452,14 +452,24 @@ def CRBITRC : PPCCRRegisterClass<[i1], 32,
        CR6LT, CR6GT, CR6EQ, CR6UN,
        CR7LT, CR7GT, CR7EQ, CR7UN,
        CR1LT, CR1GT, CR1EQ, CR1UN,
-       CR0LT, CR0GT, CR0EQ, CR0UN),
-  (sub CRBITRC, CR2LT, CR2GT, CR2EQ, CR2UN, CR3LT, CR3GT,
-       CR3EQ, CR3UN, CR4LT, CR4GT, CR4EQ, CR4UN), 32>;
+       CR0LT, CR0GT, CR0EQ, CR0UN), 32> {
+  let AltOrders = [(sub CRBITRC, CR2LT, CR2GT, CR2EQ, CR2UN, CR3LT, CR3GT,
+                        CR3EQ, CR3UN, CR4LT, CR4GT, CR4EQ, CR4UN)];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().isELFv2ABI() &&
+           MF.getInfo<PPCFunctionInfo>()->isNonVolatileCRDisabled();
+  }];
+}
 
-def CRRC : PPCCRRegisterClass<[i32], 32,
+def CRRC : PPCRegisterClass<[i32], 32,
   (add CR0, CR1, CR5, CR6,
-       CR7, CR2, CR3, CR4),
-  (sub CRRC, CR2, CR3, CR4)>;
+       CR7, CR2, CR3, CR4)> {
+  let AltOrders = [(sub CRRC, CR2, CR3, CR4)];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().isELFv2ABI() &&
+           MF.getInfo<PPCFunctionInfo>()->isNonVolatileCRDisabled();
+  }];
+}
 
 // The CTR registers are not allocatable because they're used by the
 // decrement-and-branch instructions, and thus need to stay live across
