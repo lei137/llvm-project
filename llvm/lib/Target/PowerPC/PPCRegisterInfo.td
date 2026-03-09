@@ -338,48 +338,77 @@ def GPRC32 : PPCNonAllocatableRegisterClass<[i32,f32], 32,
 /// Register classes
 // Allocate volatiles first
 // then nonvolatiles in reverse order since stmw/lmw save from rN to r31
-def GPRC : PPCGPRRegisterClass<[i32,f32], 32,
+def GPRC : PPCRegisterClass<[i32,f32], 32,
              (add (sequence "R%u", 2, 12),
                   (sequence "R%u", 30, 13),
-                  R31, R0, R1, FP, BP),
-             // On non-Darwin PPC64 systems, R2 can be allocated,
-             // but must be restored, so put it at the end of the list.
-             (add (sub GPRC, R2), R2),
-             // On AIX, CSRs are allocated starting from R31 according to:
-             // https://www.ibm.com/docs/en/ssw_aix_72/assembler/assembler_pdf.pdf
-             // This also helps setting the correct `NumOfGPRsSaved' in
-             // traceback table.
-             (add (sequence "R%u", 2, 12),
-                  (sequence "R%u", 31, 13), R0, R1, FP, BP)>;
+                  R31, R0, R1, FP, BP)> {
+  let AltOrders = [
+    // On non-Darwin PPC64 systems, R2 can be allocated,
+    // but must be restored, so put it at the end of the list.
+    (add (sub GPRC, R2), R2),
+    // On AIX, CSRs are allocated starting from R31 according to:
+    // https://www.ibm.com/docs/en/ssw_aix_72/assembler/assembler_pdf.pdf
+    // This also helps setting the correct `NumOfGPRsSaved' in
+    // traceback table.
+    (add (sequence "R%u", 2, 12),
+         (sequence "R%u", 31, 13), R0, R1, FP, BP)
+  ];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().getGPRAllocationOrderIdx();
+  }];
+}
 
-def G8RC : PPCGPRRegisterClass<[i64], 64,
+def G8RC : PPCRegisterClass<[i64], 64,
              (add (sequence "X%u", 2, 12),
                   (sequence "X%u", 30, 14),
-                  X31, X13, X0, X1, FP8, BP8),
-             // On non-Darwin PPC64 systems, R2 can be allocated,
-             // but must be restored, so put it at the end of the list.
-             (add (sub G8RC, X2), X2),
-             (add (sequence "X%u", 2, 12),
-                  (sequence "X%u", 31, 13), X0, X1, FP8, BP8)>;
+                  X31, X13, X0, X1, FP8, BP8)> {
+  let AltOrders = [
+    // On non-Darwin PPC64 systems, R2 can be allocated,
+    // but must be restored, so put it at the end of the list.
+    (add (sub G8RC, X2), X2),
+    (add (sequence "X%u", 2, 12),
+         (sequence "X%u", 31, 13), X0, X1, FP8, BP8)
+  ];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().getGPRAllocationOrderIdx();
+  }];
+}
 
 // For some instructions r0 is special (representing the value 0 instead of
 // the value in the r0 register), and we use these register subclasses to
 // prevent r0 from being allocated for use by those instructions.
-def GPRC_NOR0 : PPCGPRRegisterClass<[i32,f32], 32,
-                  (add (sub GPRC, R0), ZERO),
-                  // On non-Darwin PPC64 systems, R2 can be allocated,
-                  // but must be restored, so put it at the end of the list.
-                  (add (sub GPRC_NOR0, R2), R2),
-                  (add (sequence "R%u", 2, 12),
-                       (sequence "R%u", 31, 13), R1, FP, BP, ZERO)>;
+def GPRC_NOR0 : PPCRegisterClass<[i32,f32], 32,
+                  (add (sub GPRC, R0), ZERO)> {
+  let AltOrders = [
+    // On non-Darwin PPC64 systems, R2 can be allocated,
+    // but must be restored, so put it at the end of the list.
+    (add (sub GPRC_NOR0, R2), R2),
+    (add (sequence "R%u", 2, 12),
+         (sequence "R%u", 31, 13), R1, FP, BP, ZERO)
+  ];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().getGPRAllocationOrderIdx();
+  }];
+}
 
-def G8RC_NOX0 : PPCGPRRegisterClass<[i64], 64,
-                  (add (sub G8RC, X0), ZERO8),
-                  // On non-Darwin PPC64 systems, R2 can be allocated,
-                  // but must be restored, so put it at the end of the list.
-                  (add (sub G8RC_NOX0, X2), X2),
-                  (add (sequence "X%u", 2, 12),
-                       (sequence "X%u", 31, 13), X1, FP8, BP8, ZERO8)>;
+def G8RC_NOX0 : PPCRegisterClass<[i64], 64,
+                  (add (sub G8RC, X0), ZERO8)> {
+  let AltOrders = [
+    // On non-Darwin PPC64 systems, R2 can be allocated,
+    // but must be restored, so put it at the end of the list.
+    (add (sub G8RC_NOX0, X2), X2),
+    (add (sequence "X%u", 2, 12),
+         (sequence "X%u", 31, 13), X1, FP8, BP8, ZERO8)
+  ];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().getGPRAllocationOrderIdx();
+  }];
+}
+
+defm GPRC : PPCRegOperand<"isRegNumber">;
+defm G8RC : PPCRegOperand<"isRegNumber">;
+defm GPRC_NOR0 : PPCRegOperand<"isRegNumber">;
+defm G8RC_NOX0 : PPCRegOperand<"isRegNumber">;
 
 defm SPERC : PPCRegister<[f64], 64,
                (add (sequence "S%u", 2, 12),
@@ -448,7 +477,7 @@ defm SPILLTOVSRRC : PPCRegister<[i64, f64], 64,
 // Register class for single precision scalars in VSX registers
 defm VSSRC : PPCRegister<[f32], 32, (add VSFRC), "isVSRegNumber">;
 
-def CRBITRC : PPCCRRegisterClass<[i1], 32,
+def CRBITRC : PPCRegisterClassWithSize<[i1], 32,
   (add CR2LT, CR2GT, CR2EQ, CR2UN,
        CR3LT, CR3GT, CR3EQ, CR3UN,
        CR4LT, CR4GT, CR4EQ, CR4UN,
@@ -456,14 +485,28 @@ def CRBITRC : PPCCRRegisterClass<[i1], 32,
        CR6LT, CR6GT, CR6EQ, CR6UN,
        CR7LT, CR7GT, CR7EQ, CR7UN,
        CR1LT, CR1GT, CR1EQ, CR1UN,
-       CR0LT, CR0GT, CR0EQ, CR0UN),
-  (sub CRBITRC, CR2LT, CR2GT, CR2EQ, CR2UN, CR3LT, CR3GT,
-       CR3EQ, CR3UN, CR4LT, CR4GT, CR4EQ, CR4UN), 32>;
+       CR0LT, CR0GT, CR0EQ, CR0UN), 32> {
+  let AltOrders = [
+    (sub CRBITRC, CR2LT, CR2GT, CR2EQ, CR2UN, CR3LT, CR3GT,
+         CR3EQ, CR3UN, CR4LT, CR4GT, CR4EQ, CR4UN)
+  ];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().isELFv2ABI() &&
+           MF.getInfo<PPCFunctionInfo>()->isNonVolatileCRDisabled();
+  }];
+}
 
-def CRRC : PPCCRRegisterClass<[i32], 32,
+def CRRC : PPCRegisterClass<[i32], 32,
   (add CR0, CR1, CR5, CR6,
-       CR7, CR2, CR3, CR4),
-  (sub CRRC, CR2, CR3, CR4)>;
+       CR7, CR2, CR3, CR4)> {
+  let AltOrders = [
+    (sub CRRC, CR2, CR3, CR4)
+  ];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().isELFv2ABI() &&
+           MF.getInfo<PPCFunctionInfo>()->isNonVolatileCRDisabled();
+  }];
+}
 
 // The CTR registers are not allocatable because they're used by the
 // decrement-and-branch instructions, and thus need to stay live across
@@ -482,11 +525,17 @@ def CARRYRC : PPCNonAllocatableRegisterClass<[i32], 32, (add CARRY, XER)> {
 // Make AllocationOrder as similar as G8RC's to avoid potential spilling.
 // Similarly, we have an AltOrder for 64-bit ELF ABI which r2 is allocated
 // at last.
-def G8pRC : PPCPairedRegisterClass<[untyped], 128,
+def G8pRC : PPCRegisterClassWithSize<[untyped], 128,
               (add (sequence "G8p%u", 1, 5),
                    (sequence "G8p%u", 14, 7),
-                   G8p15, G8p6, G8p0),
-              (add (sub G8pRC, G8p1), G8p1), 128>;
+                   G8p15, G8p6, G8p0), 128> {
+  let AltOrders = [
+    (add (sub G8pRC, G8p1), G8p1)
+  ];
+  let AltOrderSelect = [{
+    return MF.getSubtarget<PPCSubtarget>().is64BitELFABI();
+  }];
+}
 
 //===----------------------------------------------------------------------===//
 // PowerPC Operand Definitions.
@@ -502,10 +551,6 @@ def G8pRC : PPCPairedRegisterClass<[untyped], 128,
 // For this purpose, we define one RegisterOperand for each RegisterClass,
 // using the same name as the class, just in lower case.
 
-defm GPRC : PPCRegOperand<"isRegNumber">;
-defm G8RC : PPCRegOperand<"isRegNumber">;
-defm GPRC_NOR0 : PPCRegOperand<"isRegNumber">;
-defm G8RC_NOX0 : PPCRegOperand<"isRegNumber">;
 defm CRBITRC : PPCRegOperand<"isCRBitNumber">;
 defm CRRC : PPCRegOperand<"isCCRegNumber">;
 defm G8pRC : PPCRegOperand<"isEvenRegNumber">;

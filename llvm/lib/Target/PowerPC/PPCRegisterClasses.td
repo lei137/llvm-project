@@ -129,18 +129,6 @@ multiclass PPCNonAllocatableRegister<list<ValueType> regTypes, int alignment,
   defm NAME : PPCRegOperand<predicate, operandName>;
 }
 
-// Multiclass for GPR-style register classes with alternative orders
-multiclass PPCGPRRegister<list<ValueType> regTypes, int alignment, dag regList,
-                          dag altOrder1, dag altOrder2, string predicate, string operandName = ""> {
-  def NAME : PPCRegisterClass<regTypes, alignment, regList> {
-    let AltOrders = [altOrder1, altOrder2];
-    let AltOrderSelect = [{
-      return MF.getSubtarget<PPCSubtarget>().getGPRAllocationOrderIdx();
-    }];
-  }
-  
-  defm NAME : PPCRegOperand<predicate, operandName>;
-}
 
 // Multiclass for condition register classes with alternative orders
 multiclass PPCCRRegister<list<ValueType> regTypes, int alignment, dag regList,
@@ -196,44 +184,6 @@ class PPCRegisterClassWithPriority<list<ValueType> regTypes, int alignment,
   : PPCRegisterClass<regTypes, alignment, regList> {
   let AllocationPriority = allocPriority;
   let GlobalPriority = globalPriority;
-  let Size = size;
-}
-
-//===----------------------------------------------------------------------===//
-// Specialized Base Classes for Common PPC Patterns
-//===----------------------------------------------------------------------===//
-
-// GPR-style register class with alternative orders for different ABIs
-// Merged PPCRegisterClassWithAltOrders into this class since it was only used here
-class PPCGPRRegisterClass<list<ValueType> regTypes, int alignment, dag regList,
-                          dag altOrder1, dag altOrder2>
-  : PPCRegisterClass<regTypes, alignment, regList> {
-  let AltOrders = [altOrder1, altOrder2];
-  let AltOrderSelect = [{
-    return MF.getSubtarget<PPCSubtarget>().getGPRAllocationOrderIdx();
-  }];
-}
-
-// Condition register class with alternative orders for ELFv2 ABI
-class PPCCRRegisterClass<list<ValueType> regTypes, int alignment, dag regList,
-                         dag altOrder, int size = 0>
-  : PPCRegisterClass<regTypes, alignment, regList> {
-  let AltOrders = [altOrder];
-  let AltOrderSelect = [{
-    return MF.getSubtarget<PPCSubtarget>().isELFv2ABI() &&
-           MF.getInfo<PPCFunctionInfo>()->isNonVolatileCRDisabled();
-  }];
-  let Size = !if(!ne(size, 0), size, 0);
-}
-
-// Paired register class with alternative orders for 64-bit ELF ABI
-class PPCPairedRegisterClass<list<ValueType> regTypes, int alignment,
-                             dag regList, dag altOrder, int size>
-  : PPCRegisterClass<regTypes, alignment, regList> {
-  let AltOrders = [altOrder];
-  let AltOrderSelect = [{
-    return MF.getSubtarget<PPCSubtarget>().is64BitELFABI();
-  }];
   let Size = size;
 }
 
