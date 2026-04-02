@@ -1086,9 +1086,14 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
   Builder.setDefaultConstrainedExcept(FPExceptionBehavior);
   if ((FD && (FD->UsesFPIntrin() || FD->hasAttr<StrictFPAttr>())) ||
       (!FD && (FPExceptionBehavior != llvm::fp::ebIgnore ||
-               RM != llvm::RoundingMode::NearestTiesToEven))) {
+               RM != llvm::RoundingMode::NearestTiesToEven)) ||
+      (FD && FD->hasAttr<AlwaysInlineAttr>())) {
     Builder.setIsFPConstrained(true);
     Fn->addFnAttr(llvm::Attribute::StrictFP);
+    // Always-inline functions need strictfp to ensure correct semantics
+    // when inlined into strict FP contexts.
+    if (FD && FD->hasAttr<AlwaysInlineAttr>())
+       Builder.setDefaultConstrainedExcept(llvm::fp::ebStrict);
   }
 
   // If a custom alignment is used, force realigning to this alignment on
