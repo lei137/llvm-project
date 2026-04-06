@@ -1488,18 +1488,6 @@ static bool compileModuleImpl(CompilerInstance &ImportingInstance,
     ImportingInstance.getModuleCache().updateModuleTimestamp(ModuleFileName);
   }
 
-  // Cache the extracted AST in memory for efficient re-reading.
-  // Extract the raw AST from the wrapped buffer (which may be in object file
-  // format) so that ASTReader can use it directly without re-extraction.
-  const PCHContainerReader &Rdr = ImportingInstance.getPCHContainerReader();
-  StringRef ExtractedAST = Rdr.ExtractPCH(*Buffer);
-  if (!ExtractedAST.empty()) {
-    // Cache a copy of the extracted AST buffer.
-    ImportingInstance.getModuleCache().getInMemoryModuleCache().addBuiltPCM(
-        ModuleFileName,
-        llvm::MemoryBuffer::getMemBufferCopy(ExtractedAST, ModuleFileName.str()));
-  }
-
   return true;
 }
 
