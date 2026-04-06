@@ -1497,7 +1497,7 @@ static bool compileModuleImpl(CompilerInstance &ImportingInstance,
     // Cache a copy of the extracted AST buffer.
     ImportingInstance.getModuleCache().getInMemoryModuleCache().addBuiltPCM(
         ModuleFileName,
-        llvm::MemoryBuffer::getMemBufferCopy(ExtractedAST, ModuleFileName));
+        llvm::MemoryBuffer::getMemBufferCopy(ExtractedAST, ModuleFileName.str()));
   }
 
   return true;
