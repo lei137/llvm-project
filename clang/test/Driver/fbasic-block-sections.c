@@ -6,6 +6,11 @@
 // RUN: %clang -### --target=aarch64 -fbasic-block-sections=list=%s %s -S 2>&1 | FileCheck -check-prefix=CHECK-OPT-LIST %s
 // RUN: %clang -### --target=aarch64 -fbasic-block-sections=labels %s -S 2>&1 | FileCheck -check-prefix=CHECK-OPT-LABELS %s
 // RUN: not %clang -### --target=aarch64 -fbasic-block-sections=all %s -S 2>&1 | FileCheck -check-prefix=CHECK-INVALID-VALUE %s
+// RUN: %clang -### --target=powerpc64le-linux-gnu -fbasic-block-sections=none %s -S 2>&1 | FileCheck -check-prefix=CHECK-OPT-NONE %s
+// RUN: %clang -### --target=powerpc64le-linux-gnu -fbasic-block-sections=all %s -S 2>&1 | FileCheck -check-prefix=CHECK-OPT-ALL %s
+// RUN: %clang -### --target=powerpc64le-linux-gnu -fbasic-block-sections=list=%s %s -S 2>&1 | FileCheck -check-prefix=CHECK-OPT-LIST %s
+// RUN: %clang -### --target=powerpc64le-linux-gnu -fbasic-block-sections=labels %s -S 2>&1 | FileCheck -check-prefix=CHECK-OPT-LABELS %s
+// RUN: not %clang -### --target=powerpc64le-linux-gnu -fbasic-block-sections=alll %s -S 2>&1 | FileCheck -check-prefix=CHECK-INVALID-VALUE %s
 // RUN: not %clang -c --target=arm-unknown-linux -fbasic-block-sections=all %s -S 2>&1 | FileCheck -check-prefix=CHECK-TRIPLE %s
 // RUN: %clang -### --target=arm-unknown-linux -fbasic-block-sections=all -fbasic-block-sections=none %s -S 2>&1 \
 // RUN:   | FileCheck -check-prefix=CHECK-NOOPT %s

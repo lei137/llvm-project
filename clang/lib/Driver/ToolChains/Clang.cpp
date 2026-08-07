@@ -6562,6 +6562,12 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
             << A->getAsString(Args) << A->getValue();
       else
         A->render(Args, CmdArgs);
+    } else if (Triple.isPPC64() && Triple.isOSBinFormatELF()) {
+      if (Val != "all" && Val != "none" && !Val.starts_with("list="))
+        D.Diag(diag::err_drv_invalid_value)
+            << A->getAsString(Args) << A->getValue();
+      else
+        A->render(Args, CmdArgs);
     } else if (Triple.isAArch64() && Triple.isOSBinFormatELF()) {
       // "all" is not supported on AArch64 since branch relaxation creates new
       // basic blocks for some cross-section branches.
