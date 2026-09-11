@@ -5914,3 +5914,19 @@ bool PPCInstrInfo::expandAMOCSNEPseudo(MachineInstr &MI) const {
   MI.eraseFromParent();
   return true;
 }
+
+bool PPCInstrInfo::isMBBSafeToSplitToCold(
+    const MachineBasicBlock &MBB) const {
+  // Splitting any block out of a function with active exception handling is
+  // unsafe on PowerPC.  Non-entry FDEs receive no CFI directives and get
+  // CFA=r1+0 / LR=undefined, which breaks stack unwinding.  The LSDA
+  // call-site table also encodes offsets relative to the function entry, so
+  // a split section's pc_begin no longer matches, causing accidental
+  // landing-pad matches and infinite unwind loops.  Reject splitting for
+  // any block until cross-section DWARF CFI and LSDA propagation are fully
+  // verified on PowerPC.
+  const MachineFunction &MF = *MBB.getParent();
+  if (!MF.getLandingPads().empty() || MF.hasEHFunclets())
+    return false;
+  return true;
+}

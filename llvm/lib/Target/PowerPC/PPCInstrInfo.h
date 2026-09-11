@@ -791,6 +791,8 @@ public:
   /// conditions can be understood enough produce a PipelinerLoopInfo object.
   std::unique_ptr<TargetInstrInfo::PipelinerLoopInfo>
   analyzeLoopForPipelining(MachineBasicBlock *LoopBB) const override;
+
+  bool isMBBSafeToSplitToCold(const MachineBasicBlock &MBB) const override;
 };
 
 }
