@@ -273,7 +273,11 @@ assignSections(MachineFunction &MF,
       // set every basic block's section ID equal to its original position in
       // the layout (which is equal to its number). This ensures that basic
       // blocks are ordered canonically.
-      MBB.setSectionID(MBB.getNumber());
+      // Skip splitting if the target considers this block unsafe to split.
+      const TargetInstrInfo &TII =
+          *MBB.getParent()->getSubtarget().getInstrInfo();
+      if (TII.isMBBSafeToSplitToCold(MBB))
+        MBB.setSectionID(MBB.getNumber());
     } else {
       auto I = FuncClusterInfo.find(*MBB.getBBID());
       if (I != FuncClusterInfo.end()) {
@@ -441,9 +445,12 @@ bool BasicBlockSections::handleBBSections(MachineFunction &MF) {
     // Make sure that the entry block is placed at the beginning.
     if (&X == &EntryBB || &Y == &EntryBB)
       return &X == &EntryBB;
-    // If the two basic block are in the same section, the order is decided by
-    // their position within the section.
-    if (XSectionID.Type == MBBSectionID::SectionType::Default)
+    // If the two basic blocks are in the same section, the order is decided by
+    // their position within the section.  In list mode, use the cluster
+    // position; otherwise (all mode, or unsplit blocks) fall back to the
+    // original block number to preserve layout order.
+    if (XSectionID.Type == MBBSectionID::SectionType::Default &&
+        !FuncClusterInfo.empty())
       return FuncClusterInfo.lookup(*X.getBBID()).PositionInCluster <
              FuncClusterInfo.lookup(*Y.getBBID()).PositionInCluster;
     return X.getNumber() < Y.getNumber();
