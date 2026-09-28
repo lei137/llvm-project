@@ -293,9 +293,14 @@ bool PPCBSel::runOnMachineFunction(MachineFunction &Fn) {
   unsigned FuncSize = ComputeBlockSizes(Fn);
 
   // If the entire function is smaller than the displacement of a branch field,
-  // we know we don't need to shrink any branches in this function.  This is a
-  // common case.
-  if (FuncSize < (1 << 15)) {
+  // and there are no basic block sections, we know we don't need to expand any
+  // branches in this function. This is a common case.
+  //
+  // However, when basic block sections are active, blocks within the same
+  // function may be placed in different ELF sections that can be relocated or
+  // separated arbitrarily by the linker. In that case, compile-time FuncSize
+  // cannot guarantee that cross-section conditional branches remain in range.
+  if (!Fn.hasBBSections() && FuncSize < (1 << 15)) {
     BlockSizes.clear();
     return false;
   }
@@ -341,8 +346,10 @@ bool PPCBSel::runOnMachineFunction(MachineFunction &Fn) {
         // block.
         int BranchSize = computeBranchSize(Fn, &MBB, Dest, MBBStartOffset);
 
-        // If this branch is in range, ignore it.
-        if (isInt<16>(BranchSize)) {
+        // If this branch is in the same section and in range, ignore it.
+        // Cross-section branches (e.g. under basic block sections) cannot assume
+        // contiguous layout and must be expanded to long branches.
+        if (MBB.sameSection(Dest) && isInt<16>(BranchSize)) {
           MBBStartOffset += 4;
           continue;
         }
