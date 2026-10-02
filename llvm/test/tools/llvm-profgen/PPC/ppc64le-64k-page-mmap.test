@@ -1,0 +1,56 @@
+# REQUIRES: powerpc-registered-target
+
+# RUN: split-file %s %t
+# RUN: yaml2obj %t/binary.yaml -o %t/test.exe
+# RUN: llvm-profgen --binary=%t/test.exe --perfscript=%t/perfscript \
+# RUN:   --output=/dev/null --skip-symbolization 2>&1 | FileCheck %s
+
+## Test that llvm-profgen correctly handles a PowerPC ELF where the kernel
+## maps the executable segment at a 64KB (p_align = 0x10000) boundary.
+## The perf mmap event reports the 64KB-aligned file offset (0x10000) rather
+## than the raw segment offset (0x13000). A hardcoded 4KB page size would
+## store TextSegmentOffset = 0x13000, fail to match the mmap event offset,
+## and abort with "File offset not found". Using p_align fixes the match.
+
+# CHECK-NOT: error:
+# CHECK: No samples in perf script
+
+#--- binary.yaml
+--- !ELF
+FileHeader:
+  Class:   ELFCLASS64
+  Data:    ELFDATA2LSB
+  Type:    ET_DYN
+  Machine: EM_PPC64
+  Entry:   0x0000000000013000
+Sections:
+  - Name:         .text
+    Type:         SHT_PROGBITS
+    Flags:        [ SHF_ALLOC, SHF_EXECINSTR ]
+    Address:      0x0000000000013000
+    Offset:       0x0000000000013000
+    AddressAlign: 0x4
+    ## lxvp 0, 0(3)  (POWER10, ISA 3.1)
+    ## blr
+    Content:      000003182000804E
+ProgramHeaders:
+  - Type:     PT_LOAD
+    Flags:    [ PF_X, PF_R ]
+    Offset:   0x13000
+    VAddr:    0x13000
+    FileSize: 0x8
+    MemSize:  0x8
+    Align:    0x10000
+    FirstSec: .text
+    LastSec:  .text
+Symbols:
+  - Name:    foo
+    Type:    STT_FUNC
+    Section: .text
+    Binding: STB_GLOBAL
+    Value:   0x13000
+    Size:    0x8
+
+#--- perfscript
+PERF_RECORD_MMAP2 1/1: [0x700000010000(0x10000) @ 0x10000 00:00 0 0]: r-xp /tmp/test.exe
+700000013004 0x700000013004/0x700000013000/P/-/-/0

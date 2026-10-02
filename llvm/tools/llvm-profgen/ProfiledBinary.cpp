@@ -362,15 +362,17 @@ template <class ELFT>
 void ProfiledBinary::setPreferredTextSegmentAddresses(const ELFFile<ELFT> &Obj,
                                                       StringRef FileName) {
   const auto &PhdrRange = unwrapOrError(Obj.program_headers(), FileName);
-  // FIXME: This should be the page size of the system running profiling.
-  // However such info isn't available at post-processing time, assuming
-  // 4K page now. Note that we don't use EXEC_PAGESIZE from <linux/param.h>
-  // because we may build the tools on non-linux.
-  uint64_t PageSize = 0x1000;
+  // FIXME: p_align approximates the runtime page size but may differ if the
+  // kernel or cross-linker uses a different page size.  The true runtime
+  // page size is not available at post-processing time.
   for (const typename ELFT::Phdr &Phdr : PhdrRange) {
     if (Phdr.p_type == ELF::PT_INTERP)
       HasInterp = true;
     if (Phdr.p_type == ELF::PT_LOAD) {
+      // The linker sets p_align to the target page size, so use it instead
+      // of a hardcoded 4KB to handle targets like PowerPC where the kernel
+      // maps segments at 64KB boundaries.
+      uint64_t PageSize = (Phdr.p_align > 1) ? Phdr.p_align : 0x1000;
       if (!FirstLoadableAddress)
         FirstLoadableAddress = Phdr.p_vaddr & ~(PageSize - 1U);
       if (Phdr.p_flags & ELF::PF_X) {
