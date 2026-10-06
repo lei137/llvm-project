@@ -197,6 +197,8 @@ public:
 
   bool adjustPrologueForCrossSplitStack(uint8_t *loc, uint8_t *end,
                                         uint8_t stOther) const override;
+  bool deleteFallThruJmpInsn(InputSection &is,
+                             InputSection *nextIS) const override;
 
 private:
   void relaxTlsGdToIe(uint8_t *loc, const Relocation &rel, uint64_t val) const;
@@ -615,6 +617,14 @@ PPC64::PPC64(Ctx &ctx) : TargetInfo(ctx) {
   defaultImageBase = 0x10000000;
 
   write32(ctx, trapInstr.data(), 0x7fe00008);
+
+  // A 4-byte NOP used to fill the gap left when a fall-through branch is
+  // deleted by --optimize-bb-jumps.  PPC64 instructions are always 4 bytes, so
+  // we only need a single-entry vector.
+  if (ctx.arg.isLE)
+    nopInstrs = {{{0x00, 0x00, 0x00, 0x60}}};
+  else
+    nopInstrs = {{{0x60, 0x00, 0x00, 0x00}}};
 }
 
 static uint32_t getEFlags(InputFile *file) {
@@ -1763,6 +1773,8 @@ void PPC64::relocateAlloc(InputSection &sec, uint8_t *buf) const {
   uint64_t secAddr = sec.getOutputSection()->addr + sec.outSecOff;
   uint64_t lastPPCRelaxedRelocOff = -1;
   for (const Relocation &rel : sec.relocs()) {
+    if (rel.expr == R_NONE) // See deleteFallThruJmpInsn
+      continue;
     uint8_t *loc = buf + rel.offset;
     const uint64_t val = sec.getRelocTargetVA(ctx, rel, secAddr + rel.offset);
     switch (rel.type) {
@@ -1930,6 +1942,72 @@ bool PPC64::adjustPrologueForCrossSplitStack(uint8_t *loc, uint8_t *end,
     write32(ctx, loc + 8, NOP);
   }
 
+  return true;
+}
+
+// Return the relocation index for input section IS with a specific Offset.
+// Returns the maximum size of the vector if no such relocation is found.
+static unsigned getPPC64RelocationWithOffset(const InputSection &is,
+                                             uint64_t offset) {
+  unsigned size = is.relocs().size();
+  for (unsigned i = size - 1; i + 1 > 0; --i) {
+    if (is.relocs()[i].offset == offset && is.relocs()[i].expr != R_NONE)
+      return i;
+  }
+  return size;
+}
+
+// Return true if relocation R in IS is a fall-through to the first instruction
+// of nextIS.
+static bool ppc64IsFallThruRelocation(InputSection &is, InputSection *nextIS,
+                                      Relocation &r) {
+  if (r.type != R_PPC64_REL24)
+    return false;
+
+  uint64_t addrLoc = is.getOutputSection()->addr + is.outSecOff + r.offset;
+  uint64_t targetOffset = is.getRelocTargetVA(is.getCtx(), r, addrLoc);
+  uint64_t nextSectionOffset =
+      nextIS->getOutputSection()->addr + nextIS->outSecOff;
+  return (addrLoc + targetOffset) == nextSectionOffset;
+}
+
+// Delete a direct branch at the end of IS if it branches to the immediately
+// following section (nextIS), since the fall-through makes it redundant.
+// Only unconditional branches ('b', opcode 18, LK=0, AA=0) are handled.
+bool PPC64::deleteFallThruJmpInsn(InputSection &is,
+                                  InputSection *nextIS) const {
+  // PPC64 branch instructions are always 4 bytes.
+  const unsigned sizeOfDirectBranchInsn = 4;
+
+  if (nextIS == nullptr)
+    return false;
+
+  if (is.getSize() < sizeOfDirectBranchInsn)
+    return false;
+
+  // The relocation for a fall-through branch is at the last instruction.
+  unsigned rIndex =
+      getPPC64RelocationWithOffset(is, is.getSize() - sizeOfDirectBranchInsn);
+  if (rIndex == is.relocs().size())
+    return false;
+
+  Relocation &r = is.relocs()[rIndex];
+
+  // Check that the last instruction is an unconditional direct branch ('b'):
+  //   opcode 18 (bits[31:26]), AA=0 (bit 1), LK=0 (bit 0) => 0x48xxxxxx & ~3
+  const uint8_t *secContents = is.content().data();
+  uint32_t instr = read32(ctx, secContents + r.offset);
+  if ((instr & 0xFC000003) != 0x48000000)
+    return false;
+
+  if (!ppc64IsFallThruRelocation(is, nextIS, r))
+    return false;
+
+  // This branch falls through to the next section; delete it.
+  r.expr = R_NONE;
+  r.offset = 0;
+  is.drop_back(sizeOfDirectBranchInsn);
+  is.nopFiller = true;
   return true;
 }
 
