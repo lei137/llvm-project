@@ -197,6 +197,10 @@ public:
 
   bool adjustPrologueForCrossSplitStack(uint8_t *loc, uint8_t *end,
                                         uint8_t stOther) const override;
+  bool deleteFallThruJmpInsn(InputSection &is,
+                             InputSection *nextIS) const override;
+  void applyJumpInstrMod(uint8_t *loc, JumpModType type,
+                         unsigned size) const override;
 
 private:
   void relaxTlsGdToIe(uint8_t *loc, const Relocation &rel, uint64_t val) const;
@@ -615,6 +619,14 @@ PPC64::PPC64(Ctx &ctx) : TargetInfo(ctx) {
   defaultImageBase = 0x10000000;
 
   write32(ctx, trapInstr.data(), 0x7fe00008);
+
+  // A 4-byte NOP used to fill the gap left when a fall-through branch is
+  // deleted by --optimize-bb-jumps.  PPC64 instructions are always 4 bytes, so
+  // we only need a single-entry vector.
+  if (ctx.arg.isLE)
+    nopInstrs = {{{0x00, 0x00, 0x00, 0x60}}};
+  else
+    nopInstrs = {{{0x60, 0x00, 0x00, 0x00}}};
 }
 
 static uint32_t getEFlags(InputFile *file) {
@@ -1763,6 +1775,8 @@ void PPC64::relocateAlloc(InputSection &sec, uint8_t *buf) const {
   uint64_t secAddr = sec.getOutputSection()->addr + sec.outSecOff;
   uint64_t lastPPCRelaxedRelocOff = -1;
   for (const Relocation &rel : sec.relocs()) {
+    if (rel.expr == R_NONE) // See deleteFallThruJmpInsn
+      continue;
     uint8_t *loc = buf + rel.offset;
     const uint64_t val = sec.getRelocTargetVA(ctx, rel, secAddr + rel.offset);
     switch (rel.type) {
@@ -1822,6 +1836,10 @@ void PPC64::relocateAlloc(InputSection &sec, uint8_t *buf) const {
       break;
     }
     relocate(loc, rel, val);
+  }
+  if (sec.jumpInstrMod) {
+    applyJumpInstrMod(buf + sec.jumpInstrMod->offset,
+                      sec.jumpInstrMod->original, sec.jumpInstrMod->size);
   }
 }
 
@@ -1931,6 +1949,198 @@ bool PPC64::adjustPrologueForCrossSplitStack(uint8_t *loc, uint8_t *end,
   }
 
   return true;
+}
+
+// Return the relocation index for input section IS with a specific Offset.
+// Returns the maximum size of the vector if no such relocation is found.
+static unsigned getPPC64RelocationWithOffset(const InputSection &is,
+                                             uint64_t offset) {
+  unsigned size = is.relocs().size();
+  for (unsigned i = size - 1; i + 1 > 0; --i) {
+    if (is.relocs()[i].offset == offset && is.relocs()[i].expr != R_NONE)
+      return i;
+  }
+  return size;
+}
+
+// Return true if relocation R in IS is a fall-through to the first instruction
+// of nextIS.
+static bool ppc64IsFallThruRelocation(InputSection &is, InputSection *nextIS,
+                                      Relocation &r) {
+  if (r.type != R_PPC64_REL24 && r.type != R_PPC64_REL14 &&
+      r.type != R_PPC64_REL24_NOTOC)
+    return false;
+
+  uint64_t addrLoc = is.getOutputSection()->addr + is.outSecOff + r.offset;
+  uint64_t targetOffset = is.getRelocTargetVA(is.getCtx(), r, addrLoc);
+  uint64_t nextSectionOffset =
+      nextIS->getOutputSection()->addr + nextIS->outSecOff;
+  return (addrLoc + targetOffset) == nextSectionOffset;
+}
+
+// Return true if instr is a simple conditional branch (bc, opcode 16) with
+// AA=0 and LK=0, where the BO field tests a condition-register bit (bit 2 of
+// BO set, bit 4 of BO clear).  Such branches can be inverted by flipping
+// bit 3 of the BO field (XOR 0x00800000).
+// Return the XOR mask to invert a conditional branch, or 0 if not invertible.
+// Two families are supported:
+//   CR-test branches (bt/bf/beq/bne, BO bit2=1 bit4=0): flip BO bit3 => 0x01000000
+//   CTR-only branches (bdnz/bdz,     BO bit2=0 bit4=1): flip BO bit1 => 0x00400000
+static uint32_t ppc64InvertBranchMask(uint32_t instr) {
+  // opcode=16, AA=0, LK=0
+  if ((instr & 0xFC000003) != 0x40000000)
+    return 0;
+  uint32_t bo = (instr >> 21) & 0x1f;
+  if ((bo & 0x14) == 0x04)
+    return 0x01000000;
+  if ((bo & 0x14) == 0x10)
+    return 0x00400000;
+  return 0;
+}
+
+static bool ppc64IsInvertibleConditionalBranch(uint32_t instr) {
+  return ppc64InvertBranchMask(instr) != 0;
+}
+
+// Delete a direct branch at the end of IS if it branches to the immediately
+// following section (nextIS), since the fall-through makes it redundant.
+// For an unconditional 'b' that falls through: delete it directly.
+// For a conditional 'bc' followed by an unconditional 'b': if the 'bc'
+// falls through, invert it, redirect it to the 'b' target, and delete the 'b'.
+bool PPC64::deleteFallThruJmpInsn(InputSection &is,
+                                  InputSection *nextIS) const {
+  // PPC64 branch instructions are always 4 bytes.
+  const unsigned sizeOfBranchInsn = 4;
+
+  if (nextIS == nullptr)
+    return false;
+
+  if (is.getSize() < sizeOfBranchInsn)
+    return false;
+
+  // The relocation for the last instruction.
+  unsigned rIndex =
+      getPPC64RelocationWithOffset(is, is.getSize() - sizeOfBranchInsn);
+  if (rIndex == is.relocs().size())
+    return false;
+
+  Relocation &r = is.relocs()[rIndex];
+  const uint8_t *secContents = is.content().data();
+  uint32_t instr = read32(ctx, secContents + r.offset);
+
+  // All cases require the last instruction to be an unconditional 'b'.
+  if ((instr & 0xFC000003) != 0x48000000)
+    return false;
+
+  // Case 3: layout [...] [bc <X>] [b <far>] [b <nextIS>]
+  // where X is the address of the trailing 'b <nextIS>' instruction.
+  // After dropping the trailing 'b', nextIS shifts to X, making the 'bc'
+  // a fall-through.  Drop both trailing branches and invert 'bc' to <far>.
+  //
+  // The 'bc' is typically an intra-section branch (no relocation); its target
+  // is read directly from the instruction's BD field.  Only 'b <far>' needs
+  // a relocation (to redirect the inverted bc to the far target).
+  if (ppc64IsFallThruRelocation(is, nextIS, r) &&
+      is.getSize() >= 3 * sizeOfBranchInsn) {
+    uint64_t bcOffset = is.getSize() - 3 * sizeOfBranchInsn;
+    uint64_t midOffset = is.getSize() - 2 * sizeOfBranchInsn;
+    uint32_t instrBc  = read32(ctx, secContents + bcOffset);
+    uint32_t instrMid = read32(ctx, secContents + midOffset);
+    if (ppc64IsInvertibleConditionalBranch(instrBc) &&
+        (instrMid & 0xFC000003) == 0x48000000) {
+      // Compute the bc target from its BD field (14-bit signed, in words).
+      // No relocation is required — this is an intra-section branch.
+      uint64_t bcLoc = is.getOutputSection()->addr + is.outSecOff + bcOffset;
+      int64_t bd = SignExtend64<16>((int64_t)(instrBc & 0xFFFC));
+      uint64_t bcTarget = bcLoc + bd;
+      // The trailing 'b <nextIS>' may not be immediately before nextIS due
+      // to alignment padding; compare against its actual address.
+      uint64_t trailingBAddr =
+          is.getOutputSection()->addr + is.outSecOff +
+          (is.getSize() - sizeOfBranchInsn);
+      if (bcTarget == trailingBAddr) {
+        // 'b <far>' must have a relocation so we can redirect the bc to it.
+        unsigned rMidIndex =
+            getPPC64RelocationWithOffset(is, midOffset);
+        if (rMidIndex != is.relocs().size()) {
+          Relocation &rMid = is.relocs()[rMidIndex];
+          // Ensure <far> is within R_PPC64_REL14 range from the bc address.
+          uint64_t farVA = rMid.sym->getVA(is.getCtx(), rMid.addend);
+          if (isInt<16>((int64_t)(farVA - bcLoc))) {
+            // Invert the bc using the appropriate XOR mask for its BO field.
+            is.jumpInstrMod = make<JumpInstrMod>();
+            *is.jumpInstrMod = {(uint32_t)bcOffset,
+                                ppc64InvertBranchMask(instrBc), sizeOfBranchInsn};
+            // Repurpose rMid as the relocation for the bc instruction so
+            // the linker writes the correct <far> target into the bc field.
+            // bc uses a 14-bit displacement so change the type to REL14.
+            rMid = {rMid.expr, R_PPC64_REL14, (uint64_t)bcOffset,
+                    rMid.addend, rMid.sym};
+            // Cancel the trailing 'b <nextIS>' and 'b <far>' (2 insns).
+            r.expr = R_NONE;
+            r.offset = 0;
+            is.drop_back(2 * sizeOfBranchInsn);
+            is.nopFiller = true;
+            return true;
+          }
+        }
+      }
+    }
+  }
+
+  // Case 2: layout [...] [bc <nextIS>] [b <far>]
+  // The last 'b' does NOT fall through; the preceding 'bc' DOES fall through
+  // to nextIS.  Invert the 'bc', redirect it to <far>, and delete the 'b'.
+  if (!ppc64IsFallThruRelocation(is, nextIS, r)) {
+    if (is.getSize() < 2 * sizeOfBranchInsn)
+      return false;
+
+    unsigned rbIndex =
+        getPPC64RelocationWithOffset(is, is.getSize() - 2 * sizeOfBranchInsn);
+    if (rbIndex == is.relocs().size())
+      return false;
+
+    Relocation &rB = is.relocs()[rbIndex];
+    uint32_t instrB = read32(ctx, secContents + rB.offset);
+
+    if (!ppc64IsInvertibleConditionalBranch(instrB))
+      return false;
+
+    if (!ppc64IsFallThruRelocation(is, nextIS, rB))
+      return false;
+
+    // Ensure the far target is within R_PPC64_REL14 range from the bc address.
+    uint64_t bcAddr =
+        is.getOutputSection()->addr + is.outSecOff + rB.offset;
+    uint64_t targetVA = r.sym->getVA(is.getCtx(), r.addend);
+    if (!isInt<16>((int64_t)(targetVA - bcAddr)))
+      return false;
+
+    is.jumpInstrMod = make<JumpInstrMod>();
+    *is.jumpInstrMod = {rB.offset, ppc64InvertBranchMask(instrB), sizeOfBranchInsn};
+    rB = {r.expr, rB.type, rB.offset, r.addend, r.sym};
+    r.expr = R_NONE;
+    r.offset = 0;
+    is.drop_back(sizeOfBranchInsn);
+    is.nopFiller = true;
+    return true;
+  }
+
+  // Case 1: last instruction is an unconditional 'b' that falls through
+  // to nextIS.  Simply delete it.
+  r.expr = R_NONE;
+  r.offset = 0;
+  is.drop_back(sizeOfBranchInsn);
+  is.nopFiller = true;
+  return true;
+}
+
+// Flip the inversion bit of the conditional branch at `loc` by XORing
+// `type` (the mask from ppc64InvertBranchMask) into the already-relocated
+// instruction.
+void PPC64::applyJumpInstrMod(uint8_t *loc, JumpModType type,
+                              unsigned size) const {
+  write32(ctx, loc, read32(ctx, loc) ^ type);
 }
 
 void elf::setPPC64TargetInfo(Ctx &ctx) { ctx.target.reset(new PPC64(ctx)); }
