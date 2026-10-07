@@ -18802,6 +18802,18 @@ Align PPCTargetLowering::getPrefLoopAlignment(MachineLoop *ML) const {
   return TargetLowering::getPrefLoopAlignment(ML);
 }
 
+unsigned PPCTargetLowering::getMaxPermittedBytesForAlignment(
+    MachineBasicBlock *MBB) const {
+  // When basic block sections are enabled, section-start blocks that are also
+  // loop headers will receive alignment padding. Since the block starts a new
+  // section, the padding only wastes code size without providing the cache-line
+  // benefit it would have in a contiguous layout. Cap padding to 1 byte
+  // (i.e. no nops emitted) for such blocks.
+  if (MBB->getParent()->hasBBSections() && MBB->isBeginSection())
+    return 1;
+  return TargetLowering::getMaxPermittedBytesForAlignment(MBB);
+}
+
 /// getConstraintType - Given a constraint, return the type of
 /// constraint it is for this target.
 PPCTargetLowering::ConstraintType

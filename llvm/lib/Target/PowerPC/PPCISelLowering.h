@@ -334,6 +334,9 @@ namespace llvm {
 
     Align getPrefLoopAlignment(MachineLoop *ML) const override;
 
+    unsigned getMaxPermittedBytesForAlignment(
+        MachineBasicBlock *MBB) const override;
+
     bool shouldInsertFencesForAtomic(const Instruction *I) const override {
       return true;
     }
