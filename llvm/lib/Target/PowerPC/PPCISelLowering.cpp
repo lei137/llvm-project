@@ -18771,6 +18771,14 @@ Align PPCTargetLowering::getPrefLoopAlignment(MachineLoop *ML) const {
     if (!ML)
       break;
 
+    // When basic block sections are active, blocks may be placed in separate
+    // ELF sections arbitrarily far apart. Alignments set for performance
+    // based on code location (cache-line fit, innermost-loop heuristics) add
+    // padding overhead in cold sections with no benefit, so skip them.
+    if (Subtarget.getTargetMachine().Options.BBSections !=
+        BasicBlockSection::None)
+      break;
+
     if (!DisableInnermostLoopAlign32) {
       // If the nested loop is an innermost loop, prefer to a 32-byte alignment,
       // so that we can decrease cache misses and branch-prediction misses.
