@@ -2134,8 +2134,15 @@ template <class ELFT> void Writer<ELFT>::finalizeSections() {
   // Relaxation to delete inter-basic block jumps created by basic block
   // sections. Run after ctx.in.symTab is finalized as optimizeBasicBlockJumps
   // can relax jump instructions based on symbol offset.
-  if (ctx.arg.optimizeBBJumps)
+  if (ctx.arg.optimizeBBJumps) {
     optimizeBasicBlockJumps();
+    // optimizeBasicBlockJumps shrinks .text sections and calls
+    // assignAddresses(), which shifts all subsequent section addresses.
+    // Refresh the .eh_frame_hdr binary search table so the unwinder finds
+    // the correct FDE for each PC after the address changes.
+    if (ctx.in.ehFrameHdr && ctx.in.ehFrameHdr->isNeeded())
+      ctx.in.ehFrameHdr->updateAllocSize(ctx);
+  }
 
   // Fill other section headers. The dynamic table is finalized
   // at the end because some tags like RELSZ depend on result
